@@ -1,6 +1,6 @@
 #  MIT License
 #
-#  Copyright (c) 2021 Mathieu Imfeld
+#  Copyright (c) 2021 MrMat
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to deal
@@ -24,4 +24,3 @@ import os
 import pkg_resources
 
 __version__ = pkg_resources.get_distribution('mrmat-python-api-flask').version
-__swagger__ = os.path.join(os.path.dirname(__file__), 'swagger')
