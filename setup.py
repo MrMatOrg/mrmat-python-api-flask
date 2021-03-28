@@ -1,6 +1,6 @@
 #  MIT License
 #
-#  Copyright (c) 2021 Mathieu Imfeld
+#  Copyright (c) 2021 MrMat
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
 #  of this software and associated documentation files (the "Software"), to deal
@@ -20,19 +20,6 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
-#  MIT License
-#
-#
-#  Permission is hereby granted, free of charge, to any person obtaining a copy
-#  of this software and associated documentation files (the "Software"), to deal
-#  in the Software without restriction, including without limitation the rights
-#  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-#  copies of the Software, and to permit persons to whom the Software is
-#  furnished to do so, subject to the following conditions:
-#
-#
-#
-
 from setuptools import setup, find_packages
 
 setup(
@@ -47,13 +34,10 @@ setup(
     setup_requires=['flake8'],
     zip_safe=False,
     include_package_data=True,
-    package_data={
-        "": ["*.yaml"]
-    },
 
     entry_points={
         'console_scripts': [
-            'mrmat-python-api-connexion = mrmat_python_api_connexion.app:main'
+            'mrmat-python-api-flask = mrmat_python_api_flask.app:main'
         ]
     }
 )
