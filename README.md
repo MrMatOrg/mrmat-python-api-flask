@@ -17,7 +17,8 @@ Features:
 
 ## How to run this
 
-You have the choice of running this directly or within a container image. To run this directly:
+You have the choice of running this directly or within a container image. To run this directly (assuming you have created
+the recommended virtualenv):
 
 ```
 $ python ./setup.py install
