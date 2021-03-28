@@ -20,7 +20,6 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
-import os
 import pkg_resources
 
 __version__ = pkg_resources.get_distribution('mrmat-python-api-flask').version
