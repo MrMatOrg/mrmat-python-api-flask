@@ -1,0 +1,3 @@
+graft mrmat_python_api_flask/templates
+graft mrmat_python_api_flask/static
+global-exclude *.pyc

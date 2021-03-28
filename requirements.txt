@@ -1,0 +1,3 @@
+# Runtime requirements
+
+flask==1.1.2                    # BSD 3-Clause
