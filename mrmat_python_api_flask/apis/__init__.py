@@ -20,6 +20,6 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
-from .healthz import bp as api_healthz
-from .greetingV1 import bp as api_greeting_v1
-from .greetingV2 import bp as api_greeting_v2
+from .healthz import bp as api_healthz              # noqa: F401
+from .greetingV1 import bp as api_greeting_v1       # noqa: F401
+from .greetingV2 import bp as api_greeting_v2       # noqa: F401
