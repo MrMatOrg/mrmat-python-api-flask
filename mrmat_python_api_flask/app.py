@@ -22,15 +22,16 @@
 
 import sys
 import argparse
-from flask import Flask
 
-from mrmat_python_api_flask import __version__
-from mrmat_python_api_flask.apis import api_greeting_v1, api_greeting_v2, api_healthz
+from mrmat_python_api_flask import __version__, app, db
+from mrmat_python_api_flask.db.resource import Resource
+from mrmat_python_api_flask.apis import api_greeting_v1, api_greeting_v2, api_healthz, api_resource_v1
 
-app = Flask(__name__)
 app.register_blueprint(api_healthz, url_prefix='/healthz')
 app.register_blueprint(api_greeting_v1, url_prefix='/api/greeting/v1')
 app.register_blueprint(api_greeting_v2, url_prefix='/api/greeting/v2')
+app.register_blueprint(api_resource_v1, url_prefix='/api/resource/v1')
+db.create_all()
 
 
 def main() -> int:

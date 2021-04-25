@@ -21,5 +21,13 @@
 #  SOFTWARE.
 
 import pkg_resources
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
 
 __version__ = pkg_resources.get_distribution('mrmat-python-api-flask').version
+__default_database__ = ':memory:'
+
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite+pysqlite:///:memory:"
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)

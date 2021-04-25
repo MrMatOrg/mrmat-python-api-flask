@@ -20,7 +20,14 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
-from .healthz import bp as api_healthz              # noqa: F401
-from .greetingV1 import bp as api_greeting_v1       # noqa: F401
-from .greetingV2 import bp as api_greeting_v2       # noqa: F401
-from .resourceV1 import bp as api_resource_v1       # noqa: F401
+from flask import Response
+from flask.testing import FlaskClient
+from typing import Dict
+
+
+def test_create(client: FlaskClient):
+    resource_entry: Dict = {'owner': 'MrMat', 'name': 'Test Resource'}
+    rv: Response = client.post('/api/resource/v1/', json=resource_entry)
+    json_body: Dict = rv.get_json()
+    assert rv.status_code == 201
+    assert json_body == resource_entry

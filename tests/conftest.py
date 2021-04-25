@@ -22,7 +22,7 @@
 
 import pytest
 
-from mrmat_python_api_flask.app import app
+from mrmat_python_api_flask import app
 
 
 @pytest.fixture
