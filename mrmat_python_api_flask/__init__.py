@@ -82,6 +82,9 @@ def create_app(override_config=None):
     ma.init_app(app)
     app.teardown_appcontext(close_db)
 
+    #
+    # Import our APIs here
+
     from mrmat_python_api_flask.apis.healthz import bp as api_healthz
     from mrmat_python_api_flask.apis.greeting.v1 import api_greeting_v1
     from mrmat_python_api_flask.apis.greeting.v2 import api_greeting_v2
