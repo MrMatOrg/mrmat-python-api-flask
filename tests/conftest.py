@@ -22,11 +22,14 @@
 
 import pytest
 
-from mrmat_python_api_flask import app
+from mrmat_python_api_flask import create_app, db
 
 
 @pytest.fixture
 def client():
-    app.config['TESTING'] = True
+    app = create_app()
+    #app.config['TESTING'] = True
+    with app.app_context():
+        db.create_all()
     with app.test_client() as client:
         yield client
