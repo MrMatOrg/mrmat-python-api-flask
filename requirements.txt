@@ -2,3 +2,6 @@
 
 flask==1.1.2                    # BSD 3-Clause
 Flask-SQLAlchemy==2.5.1         # BSD 3-Clause
+Flask-Migrate==2.7.0            # MIT
+Flask-Marshmallow==0.14.0       # MIT
+marshmallow-sqlalchemy==0.25.0  # MIT
