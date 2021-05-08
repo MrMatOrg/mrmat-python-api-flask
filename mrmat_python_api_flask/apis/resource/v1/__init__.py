@@ -20,17 +20,5 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
-from sqlalchemy import Column, Integer, String
-
-from mrmat_python_api_flask.db import Base
-
-
-class Resource(Base):
-    __tablename__ = 'resources'
-    id = Column(Integer, primary_key=True)
-    owner = Column(String(50))
-    name = Column(String(50), unique=True)
-
-    def __init__(self, owner=None, name=None):
-        self.owner = owner
-        self.name = name
+from .api import bp as api_resource_v1       # noqa: F401
+from .model import Resource, ResourceSchema  # noqa: F401

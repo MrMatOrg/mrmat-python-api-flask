@@ -20,10 +20,4 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
-from sqlalchemy.ext.declarative import declarative_base
-
-Base = declarative_base()
-
-def init_db(engine):
-    from .resource import Resource
-    Base.metadata.create_all(bind=engine)
+from .api import bp as api_greeting_v1       # noqa: F401

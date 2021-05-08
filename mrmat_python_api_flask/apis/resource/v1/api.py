@@ -23,50 +23,50 @@
 from flask import Blueprint, request
 
 from mrmat_python_api_flask import db
-from mrmat_python_api_flask.db.resource import Resource
+from .model import Resource, resource_schema, resources_schema
 
 bp = Blueprint('resource_v1', __name__)
 
 
 @bp.route('/', methods=['GET'])
 def get_all():
-    all = Resource.query.all()
-    return all, 200
+    a = Resource.query.all()
+    return {'resources': resources_schema.dump(a)}, 200
 
 
 @bp.route('/<i>', methods=['GET'])
 def get_one(i: int):
-    resource = Resource.query.filter(Resource.id == i)
+    resource = Resource.query.filter(Resource.id == i).one()
     if resource is None:
         return {'status': 404, 'message': f'Unable to find entry with identifier {i} in database'}, 404
-    return resource, 200
+    return resource_schema.dump(resource), 200
 
 
 @bp.route('/', methods=['POST'])
 def create():
-    json = request.get_json()
-    resource = Resource(owner=json['owner'], name=json['name'])
+    body = resource_schema.load(request.get_json())
+    resource = Resource(owner=body['owner'], name=body['name'])
     db.session.add(resource)
     db.session.commit()
-    return resource, 201
+    return resource_schema.dump(resource), 201
 
 
 @bp.route('/<i>', methods=['PUT'])
 def modify(i: int):
-    json = request.get_json()
-    resource = Resource.query.filter(Resource.id == i)
+    body = resource_schema.load(request.get_json())
+    resource = Resource.query.filter(Resource.id == i).one()
     if resource is None:
         return {'status': 404, 'message': f'Unable to find entry with identifier {i} in database'}, 404
-    resource.owner = json['owner']
-    resource.name = json['name']
+    resource.owner = body['owner']
+    resource.name = body['name']
     db.session.add(resource)
     db.session.commit()
-    return resource, 200
+    return resource_schema.dump(resource), 200
 
 
 @bp.route('/<i>', methods=['DELETE'])
 def remove(i: int):
-    resource = Resource.query.filter(Resource.id == i)
+    resource = Resource.query.filter(Resource.id == i).one()
     if resource is None:
         return {'status': 404, 'message': f'Unable to find entry with identifier {i} in database'}, 404
     db.session.delete(resource)
