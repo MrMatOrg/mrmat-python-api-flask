@@ -20,8 +20,10 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
+import sys
 import os
 import pkg_resources
+from logging.config import dictConfig
 
 from flask import Flask, g
 from flask_sqlalchemy import SQLAlchemy
@@ -34,12 +36,21 @@ db = SQLAlchemy()
 ma = Marshmallow()
 migrate = Migrate()
 
-
-def close_db(e=None):
-    db: SQLAlchemy = g.pop('db', None)
-    if db is not None:
-        # TODO: Safely shut down DB layer
-        pass
+dictConfig({
+    'version': 1,
+    'formatters': {'default': {
+        'format': '[%(asctime)s] %(levelname)s: %(message)s',
+    }},
+    'handlers': {'wsgi': {
+        'class': 'logging.StreamHandler',
+        'stream': 'ext://flask.logging.wsgi_errors_stream',
+        'formatter': 'default'
+    }},
+    'root': {
+        'level': 'INFO',
+        'handlers': ['wsgi']
+    }
+})
 
 
 def create_app(config_override=None, instance_path=None):
@@ -68,10 +79,14 @@ def create_app(config_override=None, instance_path=None):
     else:
         app.config.from_mapping(config_override)
     try:
-        os.makedirs(app.instance_path)
+        if not os.path.exists(app.instance_path):
+            app.logger.info(f'Creating new instance path at {app.instance_path}')
+            os.makedirs(app.instance_path)
+        else:
+            app.logger.info(f'Using instance path at {app.instance_path}')
     except OSError:
-        # TODO: Log this
-        pass
+        app.logger.error(f'Failed to create instance path at {app.instance_path}')
+        sys.exit(1)
 
     # TODO: When using Flask-SQLAlchemy, the following import is not required because we're importing db.Model in the
     #       SQLAlchemy classes
@@ -80,7 +95,6 @@ def create_app(config_override=None, instance_path=None):
     db.init_app(app)
     migrate.init_app(app, db)
     ma.init_app(app)
-    app.teardown_appcontext(close_db)
 
     #
     # Import our APIs here
