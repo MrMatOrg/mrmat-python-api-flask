@@ -20,33 +20,75 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
-from flask import Response
 from flask.testing import FlaskClient
-from typing import Dict
+
+from resource_api_client import ResourceAPIClient
 
 
 def test_create(client: FlaskClient):
-    resource_entry: Dict = {'owner': 'MrMat', 'name': 'Test Resource 1'}
-    rv: Response = client.post('/api/resource/v1/', json=resource_entry)
-    assert rv.status_code == 201
-    json_body: Dict = rv.get_json()
-    assert json_body['id'] == 1
-    for key in ['owner', 'name']:
-        assert json_body[key] == resource_entry[key]
+    rac = ResourceAPIClient(client)
+    (resp, resp_body) = rac.create(owner='MrMat', name='Test Resource 1')
+    assert resp.status_code == 201
+    assert resp_body['id'] == 1
+    assert resp_body['owner'] == 'MrMat'
+    assert resp_body['name'] == 'Test Resource 1'
+
+
+def test_modify(client: FlaskClient):
+    rac = ResourceAPIClient(client)
+    (resp, resp_body) = rac.create(owner='MrMat', name='Test Resource Original')
+    assert resp.status_code == 201
+    assert resp_body['id'] == 1
+    assert resp_body['owner'] == 'MrMat'
+    assert resp_body['name'] == 'Test Resource Original'
+
+    (resp, resp_body) = rac.modify(1, owner='Ee Lyn', name='Test Resource Modified')
+    assert resp.status_code == 200
+    assert resp_body['id'] == 1
+    assert resp_body['owner'] == 'Ee Lyn'
+    assert resp_body['name'] == 'Test Resource Modified'
+
+
+def test_remove(client: FlaskClient):
+    rac = ResourceAPIClient(client)
+    (resp, resp_body) = rac.create(owner='MrMat', name='Short-lived Test Resource')
+    assert resp.status_code == 201
+    assert resp_body['id'] == 1
+
+    (resp, resp_body) = rac.remove(1)
+    assert resp.status_code == 204
+    assert resp_body is None
 
 
 def test_get_all(client: FlaskClient):
-    # TODO: We're starting off with an empty database
-    rv: Response = client.get('/api/resource/v1/')
-    assert rv.status_code == 200
-    json_body = rv.get_json()
-    assert 'resources' in json_body
-    assert len(json_body['resources']) == 0
+    rac = ResourceAPIClient(client)
+    (resp, resp_body) = rac.get_all()
+    assert resp.status_code == 200
+    assert 'resources' in resp_body
+    assert len(resp_body['resources']) == 0
+
+    (resp, resp_body) = rac.create(owner='MrMat', name='Test Resource')
+    assert resp.status_code == 201
+    assert resp_body['id'] >= 0
+
+    (resp, resp_body) = rac.get_all()
+    assert resp.status_code == 200
+    assert len(resp_body['resources']) == 1
 
 
 def test_get_one(client: FlaskClient):
-    # TODO: We're starting off with an empty database
-    rv: Response = client.get('/api/resource/v1/1')
-    assert rv.status_code == 404
-    json_body = rv.get_json()
-    assert json_body is None
+    rac = ResourceAPIClient(client)
+    (resp, resp_body) = rac.get_one(1)
+    assert resp.status_code == 404
+    assert resp_body is None
+
+    (resp, resp_body) = rac.create(owner='MrMat', name='Test Resource')
+    assert resp.status_code == 201
+    assert resp_body['id'] == 1
+
+    (resp, resp_body) = rac.get_one(1)
+    assert resp.status_code == 200
+    assert resp_body['id'] == 1
+    assert resp_body['owner'] == 'MrMat'
+    assert resp_body['name'] == 'Test Resource'
+
