@@ -27,8 +27,8 @@ from mrmat_python_api_flask import create_app, db
 
 @pytest.fixture
 def client():
-    app = create_app()
-    #app.config['TESTING'] = True
+    # Note how we override the configuration here, especially how we set an ephemeral in-memory database per test
+    app = create_app({'TESTING': True, 'SQLALCHEMY_DATABASE_URI': 'sqlite://'})
     with app.app_context():
         db.create_all()
     with app.test_client() as client:

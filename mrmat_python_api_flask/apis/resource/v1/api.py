@@ -21,6 +21,7 @@
 #  SOFTWARE.
 
 from flask import Blueprint, request
+from marshmallow import ValidationError
 
 from mrmat_python_api_flask import db
 from .model import Resource, resource_schema, resources_schema
@@ -36,7 +37,7 @@ def get_all():
 
 @bp.route('/<i>', methods=['GET'])
 def get_one(i: int):
-    resource = Resource.query.filter(Resource.id == i).one()
+    resource = Resource.query.filter(Resource.id == i).first_or_404()
     if resource is None:
         return {'status': 404, 'message': f'Unable to find entry with identifier {i} in database'}, 404
     return resource_schema.dump(resource), 200
@@ -44,7 +45,13 @@ def get_one(i: int):
 
 @bp.route('/', methods=['POST'])
 def create():
-    body = resource_schema.load(request.get_json())
+    try:
+        json_body = request.get_json()
+        if not json_body:
+            return {'message': 'No input data provided'}, 400
+        body = resource_schema.load(request.get_json())
+    except ValidationError as ve:
+        return ve.messages, 422
     resource = Resource(owner=body['owner'], name=body['name'])
     db.session.add(resource)
     db.session.commit()
