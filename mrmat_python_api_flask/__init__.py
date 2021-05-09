@@ -42,7 +42,7 @@ def close_db(e=None):
         pass
 
 
-def create_app(override_config=None):
+def create_app(config_override=None, instance_path=None):
     """
     Factory method to create a Flask app.
 
@@ -51,22 +51,22 @@ def create_app(override_config=None):
     to be outside the package directory.
 
     Args:
-        override_config: Optional dict to override configuration
+        config_override: Optional dict to override configuration
+        instance_path: Optional fully qualified path to instance directory (for configuration etc)
 
     Returns: an initialised Flask app object
 
     """
-    app = Flask(__name__, instance_relative_config=True)
-    # TODO: Generate secret key
+    app = Flask(__name__, instance_relative_config=True, instance_path=instance_path)
     app.config.from_mapping(
-        SECRET_KEY='dev',
+        SECRET_KEY=os.urandom(16),
         SQLALCHEMY_DATABASE_URI='sqlite+pysqlite:///' + os.path.join(app.instance_path,
                                                                      'mrmat-python-api-flask.sqlite'),
         SQLALCHEMY_TRACK_MODIFICATIONS=False)
-    if override_config is None:
+    if config_override is None:
         app.config.from_pyfile('config.py', silent=True)
     else:
-        app.config.from_mapping(override_config)
+        app.config.from_mapping(config_override)
     try:
         os.makedirs(app.instance_path)
     except OSError:
