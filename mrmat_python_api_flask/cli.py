@@ -23,15 +23,9 @@
 import sys
 import argparse
 
-from mrmat_python_api_flask import __version__, app, db
-from mrmat_python_api_flask.db.resource import Resource
-from mrmat_python_api_flask.apis import api_greeting_v1, api_greeting_v2, api_healthz, api_resource_v1
+from flask_migrate import upgrade
 
-app.register_blueprint(api_healthz, url_prefix='/healthz')
-app.register_blueprint(api_greeting_v1, url_prefix='/api/greeting/v1')
-app.register_blueprint(api_greeting_v2, url_prefix='/api/greeting/v2')
-app.register_blueprint(api_resource_v1, url_prefix='/api/resource/v1')
-db.create_all()
+from mrmat_python_api_flask import __version__, create_app
 
 
 def main() -> int:
@@ -51,9 +45,28 @@ def main() -> int:
                         required=False,
                         default=8080,
                         help='Port to bind to')
+    parser.add_argument('--instance-path',
+                        dest='instance_path',
+                        required=False,
+                        default=None,
+                        help='Fully qualified path to instance directory')
+    parser.add_argument('--db',
+                        dest='db',
+                        required=False,
+                        default=None,
+                        help='Database URI')
 
     args = parser.parse_args()
+
+    overrides = {'DEBUG': args.debug}
+    if args.db is not None:
+        overrides['SQLALCHEMY_DATABASE_URI'] = args.db
+
+    app = create_app(config_override=overrides, instance_path=args.instance_path)
+    with app.app_context():
+        upgrade()
     app.run(host=args.host, port=args.port, debug=args.debug)
+
     return 0
 
 
