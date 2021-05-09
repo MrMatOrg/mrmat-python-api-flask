@@ -24,7 +24,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='mrmat-python-api-flask',
-    version='0.0.1',
+    version='0.0.2',
     packages=find_packages(),
     license='MIT',
     author='MrMat',
@@ -37,7 +37,7 @@ setup(
 
     entry_points={
         'console_scripts': [
-            'mrmat-python-api-flask = mrmat_python_api_flask.app:main'
+            'mrmat-python-api-flask = mrmat_python_api_flask.cli:main'
         ]
     }
 )
