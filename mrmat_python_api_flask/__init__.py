@@ -29,24 +29,32 @@ from flask import Flask, g
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_marshmallow import Marshmallow
+from flask_oidc import OpenIDConnect
 
 
 __version__ = pkg_resources.get_distribution('mrmat-python-api-flask').version
 db = SQLAlchemy()
 ma = Marshmallow()
 migrate = Migrate()
+oidc = OpenIDConnect()
 
 dictConfig({
     'version': 1,
     'formatters': {'default': {
         'format': '[%(asctime)s] %(levelname)s: %(message)s',
     }},
-    'handlers': {'wsgi': {
-        'class': 'logging.StreamHandler',
-        'stream': 'ext://flask.logging.wsgi_errors_stream',
-        'formatter': 'default'
-    }},
+    'handlers': {
+        'wsgi': {
+            'class': 'logging.StreamHandler',
+            'stream': 'ext://flask.logging.wsgi_errors_stream',
+            'formatter': 'default'
+        }
+    },
     'root': {
+        'level': 'INFO',
+        'handlers': ['wsgi']
+    },
+    'mrmat_python_api_flask': {
         'level': 'INFO',
         'handlers': ['wsgi']
     }
@@ -73,7 +81,8 @@ def create_app(config_override=None, instance_path=None):
         SECRET_KEY=os.urandom(16),
         SQLALCHEMY_DATABASE_URI='sqlite+pysqlite:///' + os.path.join(app.instance_path,
                                                                      'mrmat-python-api-flask.sqlite'),
-        SQLALCHEMY_TRACK_MODIFICATIONS=False)
+        SQLALCHEMY_TRACK_MODIFICATIONS=False,
+        OIDC_RESOURCE_SERVER_ONLY=True)
     if config_override is None:
         app.config.from_pyfile('config.py', silent=True)
     else:
@@ -95,6 +104,7 @@ def create_app(config_override=None, instance_path=None):
     db.init_app(app)
     migrate.init_app(app, db)
     ma.init_app(app)
+    oidc.init_app(app)
 
     #
     # Import our APIs here

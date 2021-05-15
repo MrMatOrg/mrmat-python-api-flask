@@ -55,10 +55,17 @@ def main() -> int:
                         required=False,
                         default=None,
                         help='Database URI')
+    parser.add_argument('--oidc-secrets',
+                        dest='oidc_secrets',
+                        required=True,
+                        help='Path to file containing OIDC registration')
 
     args = parser.parse_args()
 
-    overrides = {'DEBUG': args.debug}
+    overrides = {
+        'DEBUG': args.debug,
+        'OIDC_CLIENT_SECRETS': args.oidc_secrets
+    }
     if args.db is not None:
         overrides['SQLALCHEMY_DATABASE_URI'] = args.db
 
