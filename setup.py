@@ -37,7 +37,8 @@ setup(
 
     entry_points={
         'console_scripts': [
-            'mrmat-python-api-flask = mrmat_python_api_flask.cli:main'
+            'mrmat-python-api-flask = mrmat_python_api_flask.cli:main',
+            'mrmat-python-api-flask-client = mrmat_python_api_flask.client:main'
         ]
     }
 )
