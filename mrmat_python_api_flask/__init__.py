@@ -20,6 +20,9 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
+"""Main entry point when executing this application as a WSGI app
+"""
+
 import sys
 import os
 import pkg_resources
@@ -30,7 +33,6 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_marshmallow import Marshmallow
 from flask_oidc import OpenIDConnect
-
 
 __version__ = pkg_resources.get_distribution('mrmat-python-api-flask').version
 db = SQLAlchemy()
@@ -62,8 +64,7 @@ dictConfig({
 
 
 def create_app(config_override=None, instance_path=None):
-    """
-    Factory method to create a Flask app.
+    """Factory method to create a Flask app.
 
     Allows configuration overrides by providing the optional test_config dict as well as a `config.py`
     within the instance_path. Will create the instance_path if it does not exist. instance_path is meant
@@ -109,10 +110,10 @@ def create_app(config_override=None, instance_path=None):
     #
     # Import and register our APIs here
 
-    from mrmat_python_api_flask.apis.healthz import bp as api_healthz
-    from mrmat_python_api_flask.apis.greeting.v1 import api_greeting_v1
-    from mrmat_python_api_flask.apis.greeting.v2 import api_greeting_v2
-    from mrmat_python_api_flask.apis.resource.v1 import api_resource_v1
+    from mrmat_python_api_flask.apis.healthz import bp as api_healthz  # pylint: disable=import-outside-toplevel
+    from mrmat_python_api_flask.apis.greeting.v1 import api_greeting_v1  # pylint: disable=import-outside-toplevel
+    from mrmat_python_api_flask.apis.greeting.v2 import api_greeting_v2  # pylint: disable=import-outside-toplevel
+    from mrmat_python_api_flask.apis.resource.v1 import api_resource_v1  # pylint: disable=import-outside-toplevel
     app.register_blueprint(api_healthz, url_prefix='/healthz')
     app.register_blueprint(api_greeting_v1, url_prefix='/api/greeting/v1')
     app.register_blueprint(api_greeting_v2, url_prefix='/api/greeting/v2')
