@@ -97,9 +97,9 @@ def create_app(config_override=None, instance_path=None):
         app.logger.error(f'Failed to create instance path at {app.instance_path}')
         sys.exit(1)
 
-    # TODO: When using Flask-SQLAlchemy, the following import is not required because we're importing db.Model in the
-    #       SQLAlchemy classes
-    # from .dao.resource import ResourceDAO
+    # When using Flask-SQLAlchemy, there is no need to explicitly import DAO classes because they themselves
+    # inherit from the SQLAlchemy model
+
     global db, ma, migrate
     db.init_app(app)
     migrate.init_app(app, db)
@@ -107,7 +107,7 @@ def create_app(config_override=None, instance_path=None):
     oidc.init_app(app)
 
     #
-    # Import our APIs here
+    # Import and register our APIs here
 
     from mrmat_python_api_flask.apis.healthz import bp as api_healthz
     from mrmat_python_api_flask.apis.greeting.v1 import api_greeting_v1
