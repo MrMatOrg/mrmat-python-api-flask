@@ -24,7 +24,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='mrmat-python-api-flask',
-    version='0.0.2',
+    version='0.0.3',
     packages=find_packages(),
     license='MIT',
     author='MrMat',
