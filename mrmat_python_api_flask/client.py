@@ -29,8 +29,6 @@ from typing import List, Optional, Dict
 import cli_ui
 from halo import Halo
 import requests
-import oauthlib.oauth2
-import requests_oauthlib
 
 from mrmat_python_api_flask import __version__
 
@@ -56,7 +54,7 @@ def oidc_discovery(config: Dict) -> Dict:
     try:
         data = resp.json()
     except ValueError:
-        raise ClientException(exit_code=1, msg=f'Unable to parse response from discovery endpoint into JSON')
+        raise ClientException(exit_code=1, msg='Unable to parse response from discovery endpoint into JSON')
     return data
 
 
@@ -70,7 +68,7 @@ def oidc_device_auth(config: Dict, discovery: Dict) -> Dict:
     try:
         data = resp.json()
     except ValueError:
-        raise ClientException(exit_code=1, msg=f'Unable to parse response from device endpoint into JSON')
+        raise ClientException(exit_code=1, msg='Unable to parse response from device endpoint into JSON')
     return data
 
 

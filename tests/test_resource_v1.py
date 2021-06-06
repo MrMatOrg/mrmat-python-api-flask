@@ -97,4 +97,3 @@ def test_get_one(client: FlaskClient):
     assert resp_body['id'] == 1
     assert resp_body['owner'] == 'MrMat'
     assert resp_body['name'] == 'Test Resource'
-

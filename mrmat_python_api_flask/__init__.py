@@ -28,7 +28,7 @@ import os
 import pkg_resources
 from logging.config import dictConfig
 
-from flask import Flask, g
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_marshmallow import Marshmallow

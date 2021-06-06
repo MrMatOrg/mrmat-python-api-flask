@@ -22,7 +22,7 @@
 
 import pytest
 
-from typing import Optional,Dict
+from typing import Optional, Dict
 from flask import Response
 from flask.testing import FlaskClient
 
