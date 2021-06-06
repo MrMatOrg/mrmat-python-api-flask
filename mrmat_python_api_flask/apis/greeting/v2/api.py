@@ -20,6 +20,9 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
+"""Blueprint for the Greeting API in V2
+"""
+
 from flask import Blueprint, request
 
 bp = Blueprint('greeting_v2', __name__)

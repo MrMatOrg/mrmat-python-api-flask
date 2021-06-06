@@ -20,6 +20,9 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
+"""Resource API SQLAlchemy model
+"""
+
 from sqlalchemy import Column, Integer, String
 from marshmallow import fields
 

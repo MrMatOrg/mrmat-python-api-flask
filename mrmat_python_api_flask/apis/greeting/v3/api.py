@@ -20,6 +20,9 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
+"""Blueprint for the Greeting API in V3
+"""
+
 from flask import Blueprint, g
 
 from mrmat_python_api_flask import oidc

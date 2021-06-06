@@ -20,6 +20,9 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
+"""Blueprint for the Resource API in V1
+"""
+
 from werkzeug.local import LocalProxy
 from flask import Blueprint, request, g, current_app
 from marshmallow import ValidationError

@@ -20,4 +20,7 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
+"""Pluggable blueprint of the Greeting API v2
+"""
+
 from .api import bp as api_greeting_v2       # noqa: F401

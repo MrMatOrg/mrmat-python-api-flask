@@ -20,6 +20,9 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
+"""Main entry point of the interactive client application
+"""
+
 import os.path
 import sys
 import json
@@ -43,6 +46,7 @@ class ClientException(Exception):
     msg: str
 
     def __init__(self, exit_code: int = 1, msg: str = 'Unknown Exception'):
+        Exception.__init__()
         self.exit_code = exit_code
         self.msg = msg
 
@@ -53,8 +57,8 @@ def oidc_discovery(config: Dict) -> Dict:
         raise ClientException(exit_code=1, msg=f'Unexpected response {resp.status_code} from discovery endpoint')
     try:
         data = resp.json()
-    except ValueError:
-        raise ClientException(exit_code=1, msg='Unable to parse response from discovery endpoint into JSON')
+    except ValueError as ve:
+        raise ClientException(exit_code=1, msg='Unable to parse response from discovery endpoint into JSON') from ve
     return data
 
 
@@ -67,8 +71,8 @@ def oidc_device_auth(config: Dict, discovery: Dict) -> Dict:
         raise ClientException(exit_code=1, msg=f'Unexpected response {resp.status_code} from device endpoint')
     try:
         data = resp.json()
-    except ValueError:
-        raise ClientException(exit_code=1, msg='Unable to parse response from device endpoint into JSON')
+    except ValueError as ve:
+        raise ClientException(exit_code=1, msg='Unable to parse response from device endpoint into JSON') from ve
     return data
 
 
@@ -162,8 +166,8 @@ def main(argv=None) -> int:
 
     config = {}
     if os.path.exists(os.path.expanduser(args.config)):
-        with open(os.path.expanduser(args.config)) as C:
-            config = json.load(C)
+        with open(os.path.expanduser(args.config)) as c:
+            config = json.load(c)
     config_override = vars(args)
     for key in config_override.keys() & config_override.keys():
         if config_override[key] is not None:
