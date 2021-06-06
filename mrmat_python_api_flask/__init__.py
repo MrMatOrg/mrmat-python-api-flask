@@ -78,16 +78,24 @@ def create_app(config_override=None, instance_path=None):
 
     """
     app = Flask(__name__, instance_relative_config=True, instance_path=instance_path)
-    app.config.from_mapping(
-        SECRET_KEY=os.urandom(16),
-        SQLALCHEMY_DATABASE_URI='sqlite+pysqlite:///' + os.path.join(app.instance_path,
-                                                                     'mrmat-python-api-flask.sqlite'),
-        SQLALCHEMY_TRACK_MODIFICATIONS=False,
-        OIDC_RESOURCE_SERVER_ONLY=True)
-    if config_override is None:
-        app.config.from_pyfile('config.py', silent=True)
-    else:
+
+    #
+    # Set configuration defaults. If a config file is present then load it. If we have overrides, apply them
+
+    app.config.setdefault('SECRET_KEY', os.urandom(16))
+    app.config.setdefault('SQLALCHEMY_DATABASE_URI',
+                          'sqlite+pysqlite:///' + os.path.join(app.instance_path, 'mrmat-python-api-flask.sqlite'))
+    app.config.setdefault('SQLALCHEMY_TRACK_MODIFICATIONS', False)
+    app.config.setdefault('OIDC_USER_INFO_ENABLED', True)
+    app.config.setdefault('OIDC_RESOURCE_SERVER_ONLY', True)
+    if 'FLASK_CONFIG' in os.environ and os.path.exists(os.path.expanduser(os.environ['FLASK_CONFIG'])):
+        app.config.from_json(os.path.expanduser(os.environ['FLASK_CONFIG']))
+    if config_override is not None:
         app.config.from_mapping(config_override)
+
+    #
+    # Create the instance folder if it does not exist
+
     try:
         if not os.path.exists(app.instance_path):
             app.logger.info(f'Creating new instance path at {app.instance_path}')
@@ -105,7 +113,10 @@ def create_app(config_override=None, instance_path=None):
     db.init_app(app)
     migrate.init_app(app, db)
     ma.init_app(app)
-    oidc.init_app(app)
+    if 'OIDC_CLIENT_SECRETS' in app.config.keys():
+        oidc.init_app(app)
+    else:
+        app.logger.warning('Running without any authentication/authorisation')
 
     #
     # Import and register our APIs here
@@ -113,10 +124,12 @@ def create_app(config_override=None, instance_path=None):
     from mrmat_python_api_flask.apis.healthz import bp as api_healthz  # pylint: disable=import-outside-toplevel
     from mrmat_python_api_flask.apis.greeting.v1 import api_greeting_v1  # pylint: disable=import-outside-toplevel
     from mrmat_python_api_flask.apis.greeting.v2 import api_greeting_v2  # pylint: disable=import-outside-toplevel
+    from mrmat_python_api_flask.apis.greeting.v3 import api_greeting_v3  # pylint: disable=import-outside-toplevel
     from mrmat_python_api_flask.apis.resource.v1 import api_resource_v1  # pylint: disable=import-outside-toplevel
     app.register_blueprint(api_healthz, url_prefix='/healthz')
     app.register_blueprint(api_greeting_v1, url_prefix='/api/greeting/v1')
     app.register_blueprint(api_greeting_v2, url_prefix='/api/greeting/v2')
+    app.register_blueprint(api_greeting_v3, url_prefix='/api/greeting/v3')
     app.register_blueprint(api_resource_v1, url_prefix='/api/resource/v1')
 
     return app
