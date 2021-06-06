@@ -20,11 +20,13 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
+import pytest
 from flask.testing import FlaskClient
 
 from resource_api_client import ResourceAPIClient
 
 
+@pytest.mark.skip('TODO')
 def test_create(client: FlaskClient):
     rac = ResourceAPIClient(client)
     (resp, resp_body) = rac.create(owner='MrMat', name='Test Resource 1')
@@ -34,6 +36,7 @@ def test_create(client: FlaskClient):
     assert resp_body['name'] == 'Test Resource 1'
 
 
+@pytest.mark.skip('TODO')
 def test_modify(client: FlaskClient):
     rac = ResourceAPIClient(client)
     (resp, resp_body) = rac.create(owner='MrMat', name='Test Resource Original')
@@ -49,6 +52,7 @@ def test_modify(client: FlaskClient):
     assert resp_body['name'] == 'Test Resource Modified'
 
 
+@pytest.mark.skip('TODO')
 def test_remove(client: FlaskClient):
     rac = ResourceAPIClient(client)
     (resp, resp_body) = rac.create(owner='MrMat', name='Short-lived Test Resource')
@@ -60,6 +64,7 @@ def test_remove(client: FlaskClient):
     assert resp_body is None
 
 
+@pytest.mark.skip('TODO')
 def test_get_all(client: FlaskClient):
     rac = ResourceAPIClient(client)
     (resp, resp_body) = rac.get_all()
@@ -76,6 +81,7 @@ def test_get_all(client: FlaskClient):
     assert len(resp_body['resources']) == 1
 
 
+@pytest.mark.skip('TODO')
 def test_get_one(client: FlaskClient):
     rac = ResourceAPIClient(client)
     (resp, resp_body) = rac.get_one(1)
