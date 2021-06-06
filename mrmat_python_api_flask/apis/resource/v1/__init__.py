@@ -20,12 +20,8 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
-from flask import Response
-from flask.testing import FlaskClient
+"""Pluggable blueprint of the Resource API v1
+"""
 
-
-def test_healthz(client: FlaskClient):
-    rv: Response = client.get('/healthz/')
-    json_body = rv.get_json()
-    assert 'status' in json_body
-    assert json_body['status'] == 'OK'
+from .api import bp as api_resource_v1       # noqa: F401
+from .model import Resource, ResourceSchema  # noqa: F401

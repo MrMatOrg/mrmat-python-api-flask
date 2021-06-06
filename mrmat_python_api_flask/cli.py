@@ -9,8 +9,8 @@
 #  copies of the Software, and to permit persons to whom the Software is
 #  furnished to do so, subject to the following conditions:
 #
-#  The above copyright notice and this permission notice shall be included in all
-#  copies or substantial portions of the Software.
+#  The above copyright notice and this permission notice shall be included in
+#  all copies or substantial portions of the Software.
 #
 #  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 #  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -20,17 +20,15 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
+"""Main entry point when executing this application from the CLI
+"""
+
 import sys
 import argparse
-from flask import Flask
 
-from mrmat_python_api_flask import __version__
-from mrmat_python_api_flask.apis import api_greeting_v1, api_greeting_v2, api_healthz
+from flask_migrate import upgrade
 
-app = Flask(__name__)
-app.register_blueprint(api_healthz, url_prefix='/healthz')
-app.register_blueprint(api_greeting_v1, url_prefix='/api/greeting/v1')
-app.register_blueprint(api_greeting_v2, url_prefix='/api/greeting/v2')
+from mrmat_python_api_flask import __version__, create_app
 
 
 def main() -> int:
@@ -50,9 +48,34 @@ def main() -> int:
                         required=False,
                         default=8080,
                         help='Port to bind to')
+    parser.add_argument('--instance-path',
+                        dest='instance_path',
+                        required=False,
+                        default=None,
+                        help='Fully qualified path to instance directory')
+    parser.add_argument('--db',
+                        dest='db',
+                        required=False,
+                        default=None,
+                        help='Database URI')
+    parser.add_argument('--oidc-secrets',
+                        dest='oidc_secrets',
+                        required=False,
+                        help='Path to file containing OIDC registration')
 
     args = parser.parse_args()
+
+    overrides = {'DEBUG': args.debug}
+    if args.oidc_secrets is not None:
+        overrides['OIDC_CLIENT_SECRETS'] = args.oidc_secrets
+    if args.db is not None:
+        overrides['SQLALCHEMY_DATABASE_URI'] = args.db
+
+    app = create_app(config_override=overrides, instance_path=args.instance_path)
+    with app.app_context():
+        upgrade()
     app.run(host=args.host, port=args.port, debug=args.debug)
+
     return 0
 
 

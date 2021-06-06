@@ -9,8 +9,8 @@
 #  copies of the Software, and to permit persons to whom the Software is
 #  furnished to do so, subject to the following conditions:
 #
-#  The above copyright notice and this permission notice shall be included in all
-#  copies or substantial portions of the Software.
+#  The above copyright notice and this permission notice shall be included in
+#  all copies or substantial portions of the Software.
 #
 #  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 #  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -24,7 +24,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='mrmat-python-api-flask',
-    version='0.0.1',
+    version='0.0.3',
     packages=find_packages(),
     license='MIT',
     author='MrMat',
@@ -37,7 +37,8 @@ setup(
 
     entry_points={
         'console_scripts': [
-            'mrmat-python-api-flask = mrmat_python_api_flask.app:main'
+            'mrmat-python-api-flask = mrmat_python_api_flask.cli:main',
+            'mrmat-python-api-flask-client = mrmat_python_api_flask.client:main'
         ]
     }
 )

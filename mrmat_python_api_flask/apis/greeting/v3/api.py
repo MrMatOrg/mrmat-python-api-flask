@@ -20,12 +20,17 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
-from flask import Response
-from flask.testing import FlaskClient
+"""Blueprint for the Greeting API in V3
+"""
+
+from flask import Blueprint, g
+
+from mrmat_python_api_flask import oidc
+
+bp = Blueprint('greeting_v3', __name__)
 
 
-def test_healthz(client: FlaskClient):
-    rv: Response = client.get('/healthz/')
-    json_body = rv.get_json()
-    assert 'status' in json_body
-    assert json_body['status'] == 'OK'
+@bp.route('/', methods=['GET'])
+@oidc.accept_token(require_token=True)
+def get():
+    return {'message': f'Hello {g.oidc_token_info["preferred_username"]}'}, 200

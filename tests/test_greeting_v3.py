@@ -20,12 +20,18 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
+import pytest
+
+from typing import Optional, Dict
 from flask import Response
 from flask.testing import FlaskClient
 
 
-def test_healthz(client: FlaskClient):
-    rv: Response = client.get('/healthz/')
+def test_greeting_v3(client: FlaskClient, test_config: Dict, oidc_token: Optional[Dict]):
+    if oidc_token is None:
+        pytest.skip('Skip test because there is no OIDC client configuration')
+    rv: Response = client.get('/api/greeting/v3/', headers={'Authorization': f'Bearer {oidc_token["access_token"]}'})
+    assert rv.status_code == 200
     json_body = rv.get_json()
-    assert 'status' in json_body
-    assert json_body['status'] == 'OK'
+    assert 'message' in json_body
+    assert json_body['message'] == f'Hello {test_config["client"]["preferred_name"]}'

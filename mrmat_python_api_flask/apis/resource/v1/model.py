@@ -20,12 +20,36 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
-from flask import Response
-from flask.testing import FlaskClient
+"""Resource API SQLAlchemy model
+"""
+
+from sqlalchemy import Column, Integer, String
+from marshmallow import fields
+
+from mrmat_python_api_flask import db, ma
 
 
-def test_healthz(client: FlaskClient):
-    rv: Response = client.get('/healthz/')
-    json_body = rv.get_json()
-    assert 'status' in json_body
-    assert json_body['status'] == 'OK'
+class Resource(db.Model):
+    __tablename__ = 'resources'
+    id = Column(Integer, primary_key=True)
+    owner = Column(String(50))
+    # TODO: Should have unique constraint on name
+    name = Column(String(50))
+
+    def __init__(self, owner=None, name=None):
+        self.owner = owner
+        self.name = name
+
+
+class ResourceSchema(ma.Schema):
+    class Meta:
+        # Fields to expose
+        fields = ('id', 'owner', 'name')
+
+    id = fields.Int()
+    name = fields.Str()
+    owner = fields.Str()
+
+
+resource_schema = ResourceSchema()
+resources_schema = ResourceSchema(many=True)
