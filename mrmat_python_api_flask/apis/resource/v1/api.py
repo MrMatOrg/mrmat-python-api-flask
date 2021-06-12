@@ -23,6 +23,8 @@
 """Blueprint for the Resource API in V1
 """
 
+from typing import Tuple
+
 from werkzeug.local import LocalProxy
 from flask import Blueprint, request, g, current_app
 from marshmallow import ValidationError
@@ -34,20 +36,24 @@ bp = Blueprint('resource_v1', __name__)
 logger = LocalProxy(lambda: current_app.logger)
 
 
+def _extract_identity() -> Tuple:
+    return g.oidc_token_info['sub'], g.oidc_token_info['preferred_username']
+
+
 @bp.route('/', methods=['GET'])
-@oidc.accept_token(require_token=True)
+@oidc.accept_token(require_token=True, scopes_required=['mrmat-python-api-flask-resource-read'])
 def get_all():
-    logger.error('Error')
-    logger.warning('Warning')
-    logger.info('Info')
-    logger.debug(f'Called by {g.oidc_token_info["sub"]}')
+    identity = _extract_identity()
+    logger.info(f'Called by {identity[1]} ({identity[0]}')
     a = Resource.query.all()
     return {'resources': resources_schema.dump(a)}, 200
 
 
 @bp.route('/<i>', methods=['GET'])
-@oidc.accept_token(require_token=True)
+@oidc.accept_token(require_token=True, scopes_required=['mrmat-python-api-flask-resource-read'])
 def get_one(i: int):
+    identity = _extract_identity()
+    logger.info(f'Called by {identity[1]} ({identity[0]}')
     resource = Resource.query.filter(Resource.id == i).first_or_404()
     if resource is None:
         return {'status': 404, 'message': f'Unable to find entry with identifier {i} in database'}, 404
@@ -55,8 +61,10 @@ def get_one(i: int):
 
 
 @bp.route('/', methods=['POST'])
-@oidc.accept_token(require_token=True)
+@oidc.accept_token(require_token=True, scopes_required=['mrmat-python-api-flask-resource-write'])
 def create():
+    identity = _extract_identity()
+    logger.info(f'Called by {identity[1]} ({identity[0]}')
     try:
         json_body = request.get_json()
         if not json_body:
@@ -64,20 +72,22 @@ def create():
         body = resource_schema.load(request.get_json())
     except ValidationError as ve:
         return ve.messages, 422
-    resource = Resource(owner=body['owner'], name=body['name'])
+    resource = Resource(owner=identity[0], name=body['name'])
     db.session.add(resource)
     db.session.commit()
     return resource_schema.dump(resource), 201
 
 
 @bp.route('/<i>', methods=['PUT'])
-@oidc.accept_token(require_token=True)
+@oidc.accept_token(require_token=True, scopes_required=['mrmat-python-api-flask-resource-write'])
 def modify(i: int):
+    identity = _extract_identity()
+    logger.info(f'Called by {identity[1]} ({identity[0]}')
     body = resource_schema.load(request.get_json())
     resource = Resource.query.filter(Resource.id == i).one()
     if resource is None:
         return {'status': 404, 'message': 'Unable to find requested resource'}, 404
-    resource.owner = body['owner']
+    resource.owner = identity[0]
     resource.name = body['name']
     db.session.add(resource)
     db.session.commit()
@@ -85,8 +95,10 @@ def modify(i: int):
 
 
 @bp.route('/<i>', methods=['DELETE'])
-@oidc.accept_token(require_token=True)
+@oidc.accept_token(require_token=True, scopes_required=['mrmat-python-api-flask-resource-write'])
 def remove(i: int):
+    identity = _extract_identity()
+    logger.info(f'Called by {identity[1]} ({identity[0]}')
     resource = Resource.query.filter(Resource.id == i).one()
     if resource is None:
         return {'status': 410, 'message': 'Unable to find requested resource'}, 410
