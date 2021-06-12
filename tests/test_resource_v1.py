@@ -20,42 +20,40 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
-import pytest
+from typing import Dict
 from flask.testing import FlaskClient
 
 from resource_api_client import ResourceAPIClient
 
 
-@pytest.mark.skip('TODO')
-def test_create(client: FlaskClient):
-    rac = ResourceAPIClient(client)
-    (resp, resp_body) = rac.create(owner='MrMat', name='Test Resource 1')
+def test_create(client: FlaskClient, oidc_token_write: Dict):
+    rac = ResourceAPIClient(client, token=oidc_token_write)
+    (resp, resp_body) = rac.create(name='Test Resource 1')
     assert resp.status_code == 201
     assert resp_body['id'] == 1
-    assert resp_body['owner'] == 'MrMat'
+    assert resp_body['owner'] == oidc_token_write['jwt']['sub']
     assert resp_body['name'] == 'Test Resource 1'
 
 
-@pytest.mark.skip('TODO')
-def test_modify(client: FlaskClient):
-    rac = ResourceAPIClient(client)
-    (resp, resp_body) = rac.create(owner='MrMat', name='Test Resource Original')
+def test_modify(client: FlaskClient, oidc_token_write):
+    rac = ResourceAPIClient(client, token=oidc_token_write)
+
+    (resp, resp_body) = rac.create(name='Test Resource Original')
     assert resp.status_code == 201
     assert resp_body['id'] == 1
-    assert resp_body['owner'] == 'MrMat'
+    assert resp_body['owner'] == oidc_token_write['jwt']['sub']
     assert resp_body['name'] == 'Test Resource Original'
 
-    (resp, resp_body) = rac.modify(1, owner='Ee Lyn', name='Test Resource Modified')
+    (resp, resp_body) = rac.modify(1, name='Test Resource Modified')
     assert resp.status_code == 200
     assert resp_body['id'] == 1
-    assert resp_body['owner'] == 'Ee Lyn'
+    assert resp_body['owner'] == oidc_token_write['jwt']['sub']
     assert resp_body['name'] == 'Test Resource Modified'
 
 
-@pytest.mark.skip('TODO')
-def test_remove(client: FlaskClient):
-    rac = ResourceAPIClient(client)
-    (resp, resp_body) = rac.create(owner='MrMat', name='Short-lived Test Resource')
+def test_remove(client: FlaskClient, oidc_token_write):
+    rac = ResourceAPIClient(client, token=oidc_token_write)
+    (resp, resp_body) = rac.create(name='Short-lived Test Resource')
     assert resp.status_code == 201
     assert resp_body['id'] == 1
 
@@ -64,36 +62,38 @@ def test_remove(client: FlaskClient):
     assert resp_body is None
 
 
-@pytest.mark.skip('TODO')
-def test_get_all(client: FlaskClient):
-    rac = ResourceAPIClient(client)
-    (resp, resp_body) = rac.get_all()
+def test_get_all(client: FlaskClient, oidc_token_read, oidc_token_write):
+    rac_read = ResourceAPIClient(client, token=oidc_token_read)
+    rac_write = ResourceAPIClient(client, token=oidc_token_write)
+
+    (resp, resp_body) = rac_read.get_all()
     assert resp.status_code == 200
     assert 'resources' in resp_body
     assert len(resp_body['resources']) == 0
 
-    (resp, resp_body) = rac.create(owner='MrMat', name='Test Resource')
+    (resp, resp_body) = rac_write.create(name='Test Resource 2')
     assert resp.status_code == 201
     assert resp_body['id'] >= 0
 
-    (resp, resp_body) = rac.get_all()
+    (resp, resp_body) = rac_read.get_all()
     assert resp.status_code == 200
     assert len(resp_body['resources']) == 1
 
 
-@pytest.mark.skip('TODO')
-def test_get_one(client: FlaskClient):
-    rac = ResourceAPIClient(client)
-    (resp, resp_body) = rac.get_one(1)
+def test_get_one(client: FlaskClient, oidc_token_read, oidc_token_write):
+    rac_read = ResourceAPIClient(client, token=oidc_token_read)
+    rac_write = ResourceAPIClient(client, token=oidc_token_write)
+
+    (resp, resp_body) = rac_read.get_one(1)
     assert resp.status_code == 404
     assert resp_body is None
 
-    (resp, resp_body) = rac.create(owner='MrMat', name='Test Resource')
+    (resp, resp_body) = rac_write.create(name='Test Resource 3')
     assert resp.status_code == 201
     assert resp_body['id'] == 1
 
-    (resp, resp_body) = rac.get_one(1)
+    (resp, resp_body) = rac_read.get_one(1)
     assert resp.status_code == 200
     assert resp_body['id'] == 1
-    assert resp_body['owner'] == 'MrMat'
-    assert resp_body['name'] == 'Test Resource'
+    assert resp_body['owner'] == oidc_token_write['jwt']['sub']
+    assert resp_body['name'] == 'Test Resource 3'
