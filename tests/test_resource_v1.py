@@ -20,6 +20,8 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
+import pytest
+
 from typing import Dict
 from flask.testing import FlaskClient
 
@@ -27,6 +29,8 @@ from resource_api_client import ResourceAPIClient
 
 
 def test_create(client: FlaskClient, oidc_token_write: Dict):
+    if oidc_token_write is None:
+        pytest.skip('No OIDC configuration is available')
     rac = ResourceAPIClient(client, token=oidc_token_write)
     (resp, resp_body) = rac.create(name='Test Resource 1')
     assert resp.status_code == 201
@@ -36,6 +40,8 @@ def test_create(client: FlaskClient, oidc_token_write: Dict):
 
 
 def test_modify(client: FlaskClient, oidc_token_write):
+    if oidc_token_write is None:
+        pytest.skip('No OIDC configuration is available')
     rac = ResourceAPIClient(client, token=oidc_token_write)
 
     (resp, resp_body) = rac.create(name='Test Resource Original')
@@ -52,6 +58,8 @@ def test_modify(client: FlaskClient, oidc_token_write):
 
 
 def test_remove(client: FlaskClient, oidc_token_write):
+    if oidc_token_write is None:
+        pytest.skip('No OIDC configuration is available')
     rac = ResourceAPIClient(client, token=oidc_token_write)
     (resp, resp_body) = rac.create(name='Short-lived Test Resource')
     assert resp.status_code == 201
@@ -63,6 +71,8 @@ def test_remove(client: FlaskClient, oidc_token_write):
 
 
 def test_get_all(client: FlaskClient, oidc_token_read, oidc_token_write):
+    if oidc_token_read is None or oidc_token_write is None:
+        pytest.skip('No OIDC configuration is available')
     rac_read = ResourceAPIClient(client, token=oidc_token_read)
     rac_write = ResourceAPIClient(client, token=oidc_token_write)
 
@@ -81,6 +91,8 @@ def test_get_all(client: FlaskClient, oidc_token_read, oidc_token_write):
 
 
 def test_get_one(client: FlaskClient, oidc_token_read, oidc_token_write):
+    if oidc_token_read is None or oidc_token_write is None:
+        pytest.skip('No OIDC configuration is available')
     rac_read = ResourceAPIClient(client, token=oidc_token_read)
     rac_write = ResourceAPIClient(client, token=oidc_token_write)
 

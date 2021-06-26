@@ -111,7 +111,7 @@ def oidc_token(config: Dict, scope: Optional[List]):
 
 
 @pytest.fixture
-def oidc_token_read(test_config) -> Dict:
+def oidc_token_read(test_config) -> Optional[Dict]:
     """ Return an OIDC token with scope 'mrmat-python-api-flask-resource-read'
 
     Args:
@@ -120,13 +120,16 @@ def oidc_token_read(test_config) -> Dict:
     Returns:
         A Dict containing the desired token structure
     """
+    if test_config is None:
+        LOGGER.info('Missing OIDC test client configuration. Tests will be limited')
+        return None
     token = oidc_token(test_config, ['mrmat-python-api-flask-resource-read'])
     token['jwt'] = jwt.decode(token['access_token'], options={"verify_signature": False})
     return token
 
 
 @pytest.fixture
-def oidc_token_write(test_config) -> Dict:
+def oidc_token_write(test_config) -> Optional[Dict]:
     """ Return an OIDC token with scope 'mrmat-python-api-flask-resource-write'
 
     Args:
@@ -135,6 +138,9 @@ def oidc_token_write(test_config) -> Dict:
     Returns:
         A Dict containing the desired token structure
     """
+    if test_config is None:
+        LOGGER.info('Missing OIDC test client configuration. Tests will be limited')
+        return None
     token = oidc_token(test_config, ['mrmat-python-api-flask-resource-write'])
     token['jwt'] = jwt.decode(token['access_token'], options={"verify_signature": False})
     return token
