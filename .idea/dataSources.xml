@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="mrmat-python-api-flask" uuid="c44cb8f3-b638-4f84-9586-815261921b47">
-      <driver-ref>sqlite.xerial</driver-ref>
+    <data-source source="LOCAL" name="mhpaf@nostromodb" uuid="8c71eaf3-f64b-4366-8db6-d08f10b6c06b">
+      <driver-ref>postgresql</driver-ref>
       <synchronize>true</synchronize>
-      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
-      <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/instance/mrmat-python-api-flask.sqlite</jdbc-url>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://localhost:5432/nostromodb</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
   </component>

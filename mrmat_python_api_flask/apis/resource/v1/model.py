@@ -23,33 +23,51 @@
 """Resource API SQLAlchemy model
 """
 
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import ForeignKey, Column, Integer, String, UniqueConstraint, BigInteger
+from sqlalchemy.orm import relationship
 from marshmallow import fields
 
 from mrmat_python_api_flask import db, ma
 
 
+class Owner(db.Model):
+    __tablename__ = 'owners'
+    id = Column(BigInteger().with_variant(Integer, 'sqlite'), primary_key=True)
+    client_id = Column(String(255), nullable=False, unique=True)
+    name = Column(String(255), nullable=False)
+    resources = relationship('Resource', back_populates='owner')
+
+
 class Resource(db.Model):
     __tablename__ = 'resources'
-    id = Column(Integer, primary_key=True)
-    owner = Column(String(50))
-    # TODO: Should have unique constraint on name
-    name = Column(String(50))
+    id = Column(BigInteger().with_variant(Integer, 'sqlite'), primary_key=True)
+    owner_id = Column(Integer, ForeignKey('owners.id'), nullable=False)
+    name = Column(String(255), nullable=False)
 
-    def __init__(self, owner=None, name=None):
-        self.owner = owner
-        self.name = name
+    owner = relationship('Owner', back_populates='resources')
+    UniqueConstraint('owner_id', 'name', name='no_duplicate_names_per_owner')
+
+
+class OwnerSchema(ma.Schema):
+    class Meta:
+        fields = ('id', 'client_id', 'name')
+
+    id = fields.Int(dump_only=True)
+    client_id = fields.Str(dump_only=True)
+    name = fields.Str()
 
 
 class ResourceSchema(ma.Schema):
     class Meta:
-        # Fields to expose
         fields = ('id', 'owner', 'name')
 
     id = fields.Int()
+    owner_id = fields.Int(load_only=True)
+    owner = fields.Nested(lambda: OwnerSchema(), dump_only=True)
     name = fields.Str()
-    owner = fields.Str()
 
 
+owner_schema = OwnerSchema()
+owners_schema = OwnerSchema(many=True)
 resource_schema = ResourceSchema()
 resources_schema = ResourceSchema(many=True)

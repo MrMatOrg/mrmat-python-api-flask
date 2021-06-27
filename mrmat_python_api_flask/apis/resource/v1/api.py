@@ -30,14 +30,15 @@ from flask import Blueprint, request, g, current_app
 from marshmallow import ValidationError
 
 from mrmat_python_api_flask import db, oidc
-from .model import Resource, resource_schema, resources_schema
+from .model import Owner, Resource, resource_schema, resources_schema
 
 bp = Blueprint('resource_v1', __name__)
 logger = LocalProxy(lambda: current_app.logger)
 
 
 def _extract_identity() -> Tuple:
-    return g.oidc_token_info['sub'], g.oidc_token_info['preferred_username']
+    return g.oidc_token_info['client_id'], \
+           g.oidc_token_info['preferred_username']
 
 
 @bp.route('/', methods=['GET'])
@@ -63,8 +64,8 @@ def get_one(i: int):
 @bp.route('/', methods=['POST'])
 @oidc.accept_token(require_token=True, scopes_required=['mrmat-python-api-flask-resource-write'])
 def create():
-    identity = _extract_identity()
-    logger.info(f'Called by {identity[1]} ({identity[0]}')
+    (client_id, name) = _extract_identity()
+    logger.info(f'Called by {name} ({client_id}')
     try:
         json_body = request.get_json()
         if not json_body:
@@ -72,7 +73,26 @@ def create():
         body = resource_schema.load(request.get_json())
     except ValidationError as ve:
         return ve.messages, 422
-    resource = Resource(owner=identity[0], name=body['name'])
+
+    #
+    # Check if we have a resource with the same name and owner already
+
+    resource = Resource.query\
+        .filter(Resource.name == body['name'] and Resource.owner.client_id == client_id)\
+        .one_or_none()
+    if resource is not None:
+        return {'status': 409,
+                'message': f'A resource with the same name and owner already exists with id {resource.id}'}, 409
+
+    #
+    # Look up the owner and create one if necessary
+
+    owner = Owner.query.filter(Owner.client_id == client_id).one_or_none()
+    if owner is None:
+        owner = Owner(client_id=client_id, name=name)
+        db.session.add(owner)
+
+    resource = Resource(owner=owner, name=body['name'])
     db.session.add(resource)
     db.session.commit()
     return resource_schema.dump(resource), 201
@@ -81,14 +101,17 @@ def create():
 @bp.route('/<i>', methods=['PUT'])
 @oidc.accept_token(require_token=True, scopes_required=['mrmat-python-api-flask-resource-write'])
 def modify(i: int):
-    identity = _extract_identity()
-    logger.info(f'Called by {identity[1]} ({identity[0]}')
+    (client_id, name) = _extract_identity()
+    logger.info(f'Called by {name} ({client_id}')
     body = resource_schema.load(request.get_json())
-    resource = Resource.query.filter(Resource.id == i).one()
+
+    resource = Resource.query.filter(Resource.id == i).one_or_none()
     if resource is None:
         return {'status': 404, 'message': 'Unable to find requested resource'}, 404
-    resource.owner = identity[0]
+    if resource.owner.client_id != client_id:
+        return { 'status': 401, 'message': 'You do not own this resource'}, 401
     resource.name = body['name']
+
     db.session.add(resource)
     db.session.commit()
     return resource_schema.dump(resource), 200
@@ -97,11 +120,15 @@ def modify(i: int):
 @bp.route('/<i>', methods=['DELETE'])
 @oidc.accept_token(require_token=True, scopes_required=['mrmat-python-api-flask-resource-write'])
 def remove(i: int):
-    identity = _extract_identity()
-    logger.info(f'Called by {identity[1]} ({identity[0]}')
-    resource = Resource.query.filter(Resource.id == i).one()
+    (client_id, name) = _extract_identity()
+    logger.info(f'Called by {name} ({client_id}')
+
+    resource = Resource.query.filter(Resource.id == i).one_or_none()
     if resource is None:
         return {'status': 410, 'message': 'Unable to find requested resource'}, 410
+    if resource.owner.client_id != client_id:
+        return { 'status': 401, 'message': 'You do not own this resource'}, 401
+
     db.session.delete(resource)
     db.session.commit()
     return {}, 204
