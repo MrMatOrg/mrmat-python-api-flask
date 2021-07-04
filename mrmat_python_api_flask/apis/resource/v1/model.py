@@ -63,7 +63,7 @@ class ResourceSchema(ma.Schema):
 
     id = fields.Int()
     owner_id = fields.Int(load_only=True)
-    owner = fields.Nested(lambda: OwnerSchema(), dump_only=True)
+    owner = fields.Nested(lambda: OwnerSchema(), dump_only=True)    # pylint: disable=W0108
     name = fields.Str()
 
 
