@@ -62,6 +62,10 @@ def test_config() -> Optional[Dict]:
     if 'FLASK_CONFIG' not in os.environ:
         LOGGER.info('Missing test configuration via FLASK_CONFIG environment variable. Tests are limited')
         return None
+    config_file = os.path.expanduser(os.environ['FLASK_CONFIG'])
+    if not os.path.exists(config_file):
+        LOGGER.info('Configuration set via FLASK_CONFIG environment variable does not exist. Tests are limited')
+        return None
     with open(os.path.expanduser(os.environ['FLASK_CONFIG'])) as C:
         return json.load(C)
 
