@@ -27,34 +27,40 @@ from typing import Tuple, Dict, Optional
 
 class ResourceAPIClient:
     client: FlaskClient
+    token: Dict
 
-    def __init__(self, client: FlaskClient):
+    _headers: Dict = {}
+
+    def __init__(self, client: FlaskClient, token: Optional[Dict]):
         self.client = client
+        self.token = token
+        if token is not None:
+            self._headers = {'Authorization': f'Bearer {token["access_token"]}'}
 
     def get_all(self) -> Tuple:
-        resp: Response = self.client.get('/api/resource/v1/')
+        resp: Response = self.client.get('/api/resource/v1/', headers=self._headers)
         resp_body = self._parse_body(resp)
         return resp, resp_body
 
     def get_one(self, i: Optional[int]) -> Tuple:
-        resp: Response = self.client.get(f'/api/resource/v1/{i}')
+        resp: Response = self.client.get(f'/api/resource/v1/{i}', headers=self._headers)
         resp_body = self._parse_body(resp)
         return resp, resp_body
 
-    def create(self, name: str, owner: str) -> Tuple:
-        req_body = {'owner': owner, 'name': name}
-        resp: Response = self.client.post('/api/resource/v1/', json=req_body)
+    def create(self, name: str) -> Tuple:
+        req_body = {'name': name}
+        resp: Response = self.client.post('/api/resource/v1/', json=req_body, headers=self._headers)
         resp_body = self._parse_body(resp)
         return resp, resp_body
 
-    def modify(self, i: Optional[int], name: str, owner: str) -> Tuple:
-        req_body = {'owner': owner, 'name': name}
-        resp: Response = self.client.put(f'/api/resource/v1/{i}', json=req_body)
+    def modify(self, i: Optional[int], name: str) -> Tuple:
+        req_body = {'name': name}
+        resp: Response = self.client.put(f'/api/resource/v1/{i}', json=req_body, headers=self._headers)
         resp_body = self._parse_body(resp)
         return resp, resp_body
 
     def remove(self, i: Optional[int]) -> Tuple:
-        resp: Response = self.client.delete(f'/api/resource/v1/{i}')
+        resp: Response = self.client.delete(f'/api/resource/v1/{i}', headers=self._headers)
         resp_body = self._parse_body(resp)
         return resp, resp_body
 

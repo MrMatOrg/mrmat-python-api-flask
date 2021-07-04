@@ -27,10 +27,11 @@ from flask import Response
 from flask.testing import FlaskClient
 
 
-def test_greeting_v3(client: FlaskClient, test_config: Dict, oidc_token: Optional[Dict]):
-    if oidc_token is None:
+def test_greeting_v3(client: FlaskClient, test_config: Dict, oidc_token_read: Optional[Dict]):
+    if oidc_token_read is None:
         pytest.skip('Skip test because there is no OIDC client configuration')
-    rv: Response = client.get('/api/greeting/v3/', headers={'Authorization': f'Bearer {oidc_token["access_token"]}'})
+    rv: Response = client.get('/api/greeting/v3/',
+                              headers={'Authorization': f'Bearer {oidc_token_read["access_token"]}'})
     assert rv.status_code == 200
     json_body = rv.get_json()
     assert 'message' in json_body

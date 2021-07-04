@@ -7,9 +7,9 @@
       <env name="FLASK_CONFIG" value="$USER_HOME$/etc/mrmat-python-api-flask.test.json" />
       <env name="HTTPLIB2_CA_CERTS" value="$USER_HOME$/var/ca/mrmat-ca/ca.crt" />
     </envs>
-    <option name="SDK_HOME" value="/opt/dyn/python/mrmat-python-api-flask/bin/python" />
+    <option name="SDK_HOME" value="" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-    <option name="IS_MODULE_SDK" value="false" />
+    <option name="IS_MODULE_SDK" value="true" />
     <option name="ADD_CONTENT_ROOTS" value="true" />
     <option name="ADD_SOURCE_ROOTS" value="true" />
     <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
@@ -18,6 +18,8 @@
     <option name="_new_additionalArguments" value="&quot;&quot;" />
     <option name="_new_target" value="&quot;tests&quot;" />
     <option name="_new_targetType" value="&quot;PATH&quot;" />
-    <method v="2" />
+    <method v="2">
+      <option name="RunConfigurationTask" enabled="true" run_configuration_name="setup.py (install)" run_configuration_type="PythonConfigurationType" />
+    </method>
   </configuration>
 </component>

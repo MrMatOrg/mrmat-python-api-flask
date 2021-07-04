@@ -228,8 +228,8 @@ Configure the following clients as needed:
 * Access Type: confidential (but if it wasn't Keycloak, should be public)
 * Flow: Device Authorization Grant
 
-Keycloaks default polling interval during the device authorization flow is set to a rather long 600s. I strongly
-suggest to reduce that to 5s in the realm settings.
+Keycloak's default polling interval during the device authorization flow is set to a rather long 600s. I strongly
+suggest reducing that to 5s in the realm settings.
 
 ### Test Client
 
@@ -237,3 +237,9 @@ suggest to reduce that to 5s in the realm settings.
 * Access Type: confidential
 * Flow: Client Credentials Grant (Keycloak: "Service Accounts Enabled")
 
+### Scopes
+
+The resource API uses two scopes that need to be defined within the IDP:
+
+* mrmat-python-api-flask-resource-write - Permit create/modify/remove of resources
+* mrmat-python-api-flask-resource-read  - Permit reading resources

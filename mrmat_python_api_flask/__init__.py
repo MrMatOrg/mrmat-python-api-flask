@@ -101,9 +101,9 @@ def create_app(config_override=None, instance_path=None):
             app.logger.info(f'Creating new instance path at {app.instance_path}')
             os.makedirs(app.instance_path)
         else:
-            app.logger.info(f'Using instance path at {app.instance_path}')
+            app.logger.info(f'Using existing instance path at {app.instance_path}')
     except OSError:
-        app.logger.error(f'Failed to create instance path at {app.instance_path}')
+        app.logger.error(f'Failed to create new instance path at {app.instance_path}')
         sys.exit(1)
 
     # When using Flask-SQLAlchemy, there is no need to explicitly import DAO classes because they themselves
