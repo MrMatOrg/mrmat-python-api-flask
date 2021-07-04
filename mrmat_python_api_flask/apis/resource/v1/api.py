@@ -109,7 +109,7 @@ def modify(i: int):
     if resource is None:
         return {'status': 404, 'message': 'Unable to find requested resource'}, 404
     if resource.owner.client_id != client_id:
-        return { 'status': 401, 'message': 'You do not own this resource'}, 401
+        return {'status': 401, 'message': 'You do not own this resource'}, 401
     resource.name = body['name']
 
     db.session.add(resource)
@@ -127,7 +127,7 @@ def remove(i: int):
     if resource is None:
         return {'status': 410, 'message': 'Unable to find requested resource'}, 410
     if resource.owner.client_id != client_id:
-        return { 'status': 401, 'message': 'You do not own this resource'}, 401
+        return {'status': 401, 'message': 'You do not own this resource'}, 401
 
     db.session.delete(resource)
     db.session.commit()
