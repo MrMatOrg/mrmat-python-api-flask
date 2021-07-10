@@ -245,3 +245,5 @@ dmypy.json
 .prof
 
 # End of https://www.toptal.com/developers/gitignore/api/jetbrains,python
+
+mrmat_python_api_flask/static

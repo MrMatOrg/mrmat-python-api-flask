@@ -3,7 +3,9 @@
     <package-json value="$PROJECT_DIR$/ui/package.json" />
     <command value="build" />
     <node-interpreter value="project" />
-    <envs />
+    <envs>
+      <env name="BUILD_PATH" value="../mrmat_python_api_flask/static/" />
+    </envs>
     <method v="2" />
   </configuration>
 </component>
