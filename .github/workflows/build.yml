@@ -17,7 +17,7 @@ env:
 on:
   push:
     branches-ignore:
-    - master
+    - main
   pull_request: {}
 
 #
@@ -34,6 +34,10 @@ jobs:
       env:
         IS_RELEASE: "true"
       run: echo "We will be performing a release upon success"
+
+    - name: Pipeline Debugging
+      run: |
+        env
 
     - name: Checkout out our code
       uses: actions/checkout@v2
