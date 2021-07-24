@@ -34,7 +34,7 @@ jobs:
     steps:
 
     - name: Determine whether this is a release build
-      if: ${{ github_event_name == 'pull_request' && github.base_ref == 'main' }}
+      if: ${{ github.event_name == 'pull_request' && github.base_ref == 'main' }}
       env:
         IS_RELEASE: "true"
       run: echo "We will be performing a release upon success"
