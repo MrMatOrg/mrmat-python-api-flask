@@ -72,7 +72,7 @@ jobs:
         path: build/coverage.xml
 
     - name: Conditionally perform a release
-      if: ${{ $IS_RELEASE == 'true' }}
+      if: ${{ env.IS_RELEASE == 'true' }}
       uses: elgohr/Github-Release-Action@master
       env:
         GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
