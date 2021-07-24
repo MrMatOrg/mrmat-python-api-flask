@@ -19,7 +19,9 @@ env:
 # can be controlled via branch protection
 
 on:
-  push: {}
+  push:
+    branches-ignore:
+    - master
   pull_request: {}
 
 #
@@ -32,7 +34,7 @@ jobs:
     steps:
 
     - name: Determine whether this is a release build
-      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+      if: ${{ github_event_name == 'pull_request' && github.base_ref == 'main' }}
       env:
         IS_RELEASE: "true"
       run: echo "We will be performing a release upon success"
@@ -45,12 +47,18 @@ jobs:
       with:
         python-version: ${{ env.PYTHON_VERSION }}
 
+    - name: Establish a cache for dependencies
+      uses: actions/cache@v2
+      with:
+        path: ~/.local
+        key: ${{ runner.os }}
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install wheel
-        pip install -r requirements.txt
-        pip install -r test-requirements.txt
+        pip install --user wheel
+        pip install --user -r requirements.txt
+        pip install --user -r test-requirements.txt
 
     - name: Lint
       run: |
