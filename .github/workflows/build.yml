@@ -13,10 +13,6 @@ env:
 
 #
 # Establish when the workflow is run
-# What we want is that a release is made whenever we merge into master. Here is an example:
-# if: ${{ github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.base_ref == 'refs/heads/main' }}
-# But really, we can also just say that a push into master causes a release. Whether that must come from a PR
-# can be controlled via branch protection
 
 on:
   push:
@@ -34,7 +30,7 @@ jobs:
     steps:
 
     - name: Determine whether this is a release build
-      if: ${{ github.event_name == 'pull_request' && github.base_ref == 'main' }}
+      if: ${{ github.event_name == 'pull_request' && github.base_ref == 'refs/heads/main' }}
       env:
         IS_RELEASE: "true"
       run: echo "We will be performing a release upon success"
