@@ -28,8 +28,8 @@ from setuptools import setup, find_packages
 # If we are running in the context of a GitHub action then we use the GITHUB_RUN_NUMBER
 # otherwise we will default to 0 for the micro version.
 
-major = 0
-minor = 0
+major = os.environ['MAJOR'] if 'MAJOR' in os.environ else 0
+minor = os.environ['MINOR'] if 'MINOR' in os.environ else 0
 micro = os.environ['GITHUB_RUN_NUMBER'] if 'GITHUB_RUN_NUMBER' in os.environ else 0
 dev = '.dev0' if 'IS_RELEASE' not in os.environ else ''
 
