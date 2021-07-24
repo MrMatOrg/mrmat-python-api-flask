@@ -7,7 +7,7 @@ Boilerplate code for a Python Flask API
 
 This variant of a Python Flask API is code-first and using native Flask
 
-Features:
+## Features
 
 * Code-first
 * Pluggable APIs and multiple API versions
@@ -16,6 +16,15 @@ Features:
 * OIDC Authentication using Flask-OIDC
 * No TLS, because this is intended to run behind a reverse proxy
 * Healthz
+
+## How to build this
+
+Use the standard `python ./setup.py install` to build. There are two environment variables that influence the build
+
+| Environment Variable | Default | Description |
+|----------------------|---------|-------------|
+| IS_RELEASE           | <unset> | If unset, `.dev0` is appended to the version being built, otherwise an empty string |
+| GITHUB_RUN_NUMBER    | 0       | Determines the micro version. If unset, the micro number is 0 |
 
 ## How to run this
 
