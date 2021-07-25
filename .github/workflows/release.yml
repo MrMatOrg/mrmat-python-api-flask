@@ -1,0 +1,46 @@
+#
+# Workflow to release, triggered by a push onto the protected main branch
+
+name: Release
+
+#
+# Operational Variables
+
+env:
+  MAJOR: 0
+  MINOR: 0
+  PYTHON_VERSION: 3.9.6
+
+#
+# Establish when the workflow is run
+
+on:
+  push:
+    branches:
+    - main
+
+#
+# Workflow
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Determine whether this is a release build
+      run: echo "We will be performing a release upon success"
+
+    - name: Pipeline Debugging
+      run: |
+        env
+
+    - name: Checkout out our code
+      uses: actions/checkout@v2
+
+    - name: Conditionally perform a release
+      uses: elgohr/Github-Release-Action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+      with:
+        args: Creating release
