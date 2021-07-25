@@ -19,12 +19,9 @@ This variant of a Python Flask API is code-first and using native Flask
 
 ## How to build this
 
-Use the standard `python ./setup.py install` to build. There are two environment variables that influence the build
-
-| Environment Variable | Default | Description |
-|----------------------|---------|-------------|
-| IS_RELEASE           | <unset> | If unset, `.dev0` is appended to the version being built, otherwise an empty string |
-| GITHUB_RUN_NUMBER    | 0       | Determines the micro version. If unset, the micro number is 0 |
+Use the standard `python ./setup.py install` to build. By default, the version built will be `0.0.0.dev0`,
+unless the `MRMAT_VERSION` environment variable is set by the build orchestrator (e.g. GitHub Actions). The
+version and whether a release is built is consequently controlled exlusively by the build orchestrator.
 
 ## How to run this
 
