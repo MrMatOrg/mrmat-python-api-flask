@@ -6,7 +6,7 @@ Boilerplate code for a Python Flask API
 [![SAST](https://github.com/MrMatOrg/mrmat-python-api-flask/actions/workflows/sast.yml/badge.svg)](https://github.com/MrMatOrg/mrmat-python-api-flask/actions/workflows/sast.yml)
 
 This variant of a Python Flask API is code-first and using native Flask
-
+ 
 ## Features
 
 * Code-first
