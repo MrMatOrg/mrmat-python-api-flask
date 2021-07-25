@@ -21,10 +21,13 @@ env:
 
 on:
   push:
-    branches-ignore: [main]
+    branches-ignore:
+    - main
   pull_request_target:
-    branches: [main]
-    types: [closed]
+    branches:
+    - main
+    types:
+    - closed
 
 #
 # Workflow
