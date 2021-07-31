@@ -33,12 +33,14 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_marshmallow import Marshmallow
 from flask_oidc import OpenIDConnect
+from flask_smorest import Api
 
 __version__ = pkg_resources.get_distribution('mrmat-python-api-flask').version
 db = SQLAlchemy()
 ma = Marshmallow()
 migrate = Migrate()
 oidc = OpenIDConnect()
+api = Api()
 
 dictConfig({
     'version': 1,
@@ -77,7 +79,11 @@ def create_app(config_override=None, instance_path=None):
     Returns: an initialised Flask app object
 
     """
-    app = Flask(__name__, instance_relative_config=True, instance_path=instance_path)
+    app = Flask(__name__,
+                static_url_path='',
+                static_folder='static',
+                instance_relative_config=True,
+                instance_path=instance_path)
 
     #
     # Set configuration defaults. If a config file is present then load it. If we have overrides, apply them
@@ -88,6 +94,20 @@ def create_app(config_override=None, instance_path=None):
     app.config.setdefault('SQLALCHEMY_TRACK_MODIFICATIONS', False)
     app.config.setdefault('OIDC_USER_INFO_ENABLED', True)
     app.config.setdefault('OIDC_RESOURCE_SERVER_ONLY', True)
+    app.config.setdefault('API_TITLE', 'MrMat :: Python :: API :: Flask')
+    app.config.setdefault('API_VERSION', __version__)
+    app.config.setdefault('OPENAPI_VERSION', '3.0.2')
+    app.config.setdefault('OPENAPI_URL_PREFIX', '/apidoc')
+    app.config.setdefault('OPENAPI_JSON_PATH', 'openapi.json')
+    app.config.setdefault('OPENAPI_SWAGGER_UI_PATH', 'swagger')
+    app.config.setdefault('OPENAPI_SWAGGER_UI_URL', 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/3.24.2/')
+    app.config.setdefault('OPENAPI_REDOC_PATH', 'redoc')
+    app.config.setdefault('OPENAPI_REDOC_URL', 'https://rebilly.github.io/ReDoc/releases/latest/redoc.min.js')
+    app.config.setdefault('OPENAPI_RAPIDOC_PATH', 'rapidoc')
+    app.config.setdefault('OPENAPI_RAPIDOC_URL', 'https://unpkg.com/rapidoc/dist/rapidoc-min.js')
+    #app.config.setdefault('OPENAPI_SWAGGER_UI_CONFIG', {
+    #    'oauth2RedirectUrl': 'http://localhost:5000/apidoc/swagger/oauth2-redirect'
+    #})
     if 'FLASK_CONFIG' in os.environ and os.path.exists(os.path.expanduser(os.environ['FLASK_CONFIG'])):
         app.config.from_json(os.path.expanduser(os.environ['FLASK_CONFIG']))
     if config_override is not None:
@@ -113,6 +133,7 @@ def create_app(config_override=None, instance_path=None):
     db.init_app(app)
     migrate.init_app(app, db)
     ma.init_app(app)
+    api.init_app(app)
     if 'OIDC_CLIENT_SECRETS' in app.config.keys():
         oidc.init_app(app)
     else:
@@ -121,15 +142,45 @@ def create_app(config_override=None, instance_path=None):
     #
     # Import and register our APIs here
 
-    from mrmat_python_api_flask.apis.healthz import bp as api_healthz  # pylint: disable=import-outside-toplevel
+    from mrmat_python_api_flask.apis.healthz import api_healthz  # pylint: disable=import-outside-toplevel
     from mrmat_python_api_flask.apis.greeting.v1 import api_greeting_v1  # pylint: disable=import-outside-toplevel
     from mrmat_python_api_flask.apis.greeting.v2 import api_greeting_v2  # pylint: disable=import-outside-toplevel
     from mrmat_python_api_flask.apis.greeting.v3 import api_greeting_v3  # pylint: disable=import-outside-toplevel
     from mrmat_python_api_flask.apis.resource.v1 import api_resource_v1  # pylint: disable=import-outside-toplevel
-    app.register_blueprint(api_healthz, url_prefix='/healthz')
-    app.register_blueprint(api_greeting_v1, url_prefix='/api/greeting/v1')
-    app.register_blueprint(api_greeting_v2, url_prefix='/api/greeting/v2')
-    app.register_blueprint(api_greeting_v3, url_prefix='/api/greeting/v3')
-    app.register_blueprint(api_resource_v1, url_prefix='/api/resource/v1')
+    api.register_blueprint(api_healthz, url_prefix='/healthz')
+    api.register_blueprint(api_greeting_v1, url_prefix='/api/greeting/v1')
+    api.register_blueprint(api_greeting_v2, url_prefix='/api/greeting/v2')
+    api.register_blueprint(api_greeting_v3, url_prefix='/api/greeting/v3')
+    api.register_blueprint(api_resource_v1, url_prefix='/api/resource/v1')
+
+    #
+    # If OAuth2 is in use, register our usage
+
+    api.spec.components.security_scheme('mrmat_keycloak',
+                                        {'type': 'oauth2',
+                                         'description': 'This API uses OAuth 2',
+                                         'flows': {
+                                             'clientCredentials': {
+                                                 'tokenUrl': 'https://keycloak.mrmat.org/auth/realms/master/protocol/openid-connect/token',
+                                                 'scopes': {
+                                                     'mrmat-python-api-flask-resource-read': 'Allows reading objects '
+                                                                                             'in the Resource API',
+                                                     'mrmat-python-api-flask-resource-write': 'Allows creating/modifying'
+                                                                                              ' and deleting objects '
+                                                                                              'in the Resource API'
+                                                 }
+                                             },
+                                             'authorizationCode': {
+                                                 'authorizationUrl': 'https://keycloak.mrmat.org/auth/realms/master/protocol/openid-connect/auth',
+                                                 'tokenUrl': 'https://keycloak.mrmat.org/auth/realms/master/protocol/openid-connect/token',
+                                                 'scopes': {
+                                                     'mrmat-python-api-flask-resource-read': 'Allows reading objects '
+                                                                                             'in the Resource API',
+                                                     'mrmat-python-api-flask-resource-write': 'Allows creating/modifying'
+                                                                                              ' and deleting objects '
+                                                                                              'in the Resource API'
+                                                 }
+                                             }
+                                         }})
 
     return app

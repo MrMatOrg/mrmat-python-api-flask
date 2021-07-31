@@ -20,14 +20,38 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
-"""Blueprint for the Healthz API
-"""
+"""Greeting API v2 Model"""
 
-from flask import Blueprint
+from marshmallow import fields
 
-bp = Blueprint('healthz', __name__)
+from mrmat_python_api_flask import ma
 
 
-@bp.route('/', methods=['GET'])
-def healthz():
-    return {'status': 'OK'}, 200
+class GreetingV2Input(ma.Schema):
+    class Meta:
+        fields: ('name',)
+
+    name = fields.Str(
+        required=False,
+        load_only=True,
+        missing='Stranger',
+        metadata={
+            'description': 'The name to greet'
+        }
+    )
+
+
+class GreetingV2Output(ma.Schema):
+    class Meta:
+        fields = ('message',)
+
+    message = fields.Str(
+        required=True,
+        dump_only=True,
+        metadata={
+            'description': 'The message returned'
+        }
+    )
+
+
+greeting_v2_output = GreetingV2Output()
