@@ -20,11 +20,12 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
+import os
 from setuptools import setup, find_packages
 
 setup(
     name='mrmat-python-api-flask',
-    version='0.0.3',
+    version=os.environ['MRMAT_VERSION'] if 'MRMAT_VERSION' in os.environ else '0.0.0.dev0',
     packages=find_packages(),
     license='MIT',
     author='MrMat',

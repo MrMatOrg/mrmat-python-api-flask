@@ -3,11 +3,10 @@
 Boilerplate code for a Python Flask API
 
 [![Build](https://github.com/MrMatOrg/mrmat-python-api-flask/actions/workflows/build.yml/badge.svg)](https://github.com/MrMatOrg/mrmat-python-api-flask/actions/workflows/build.yml)
-[![SAST](https://github.com/MrMatOrg/mrmat-python-api-flask/actions/workflows/sast.yml/badge.svg)](https://github.com/MrMatOrg/mrmat-python-api-flask/actions/workflows/sast.yml)
 
 This variant of a Python Flask API is code-first and using native Flask
-
-Features:
+ 
+## Features
 
 * Code-first
 * Pluggable APIs and multiple API versions
@@ -16,6 +15,12 @@ Features:
 * OIDC Authentication using Flask-OIDC
 * No TLS, because this is intended to run behind a reverse proxy
 * Healthz
+
+## How to build this
+
+Use the standard `python ./setup.py install` to build. By default, the version built will be `0.0.0.dev0`,
+unless the `MRMAT_VERSION` environment variable is set by the build orchestrator (e.g. GitHub Actions). The
+version and whether a release is built is consequently controlled exlusively by the build orchestrator.
 
 ## How to run this
 
