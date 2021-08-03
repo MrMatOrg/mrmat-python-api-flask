@@ -5,7 +5,7 @@ Flask-SQLAlchemy~=2.5.1         # BSD 3-Clause
 Flask-Migrate~=2.7.0            # MIT
 Flask-Marshmallow~=0.14.0       # MIT
 marshmallow-sqlalchemy~=0.25.0  # MIT
-flask-smorest~=0.31.2           # MIT
+flask-smorest~=0.32.0           # MIT
 
 psycopg2~=2.9.1                 # LGPL with exceptions
 
