@@ -248,3 +248,22 @@ The resource API uses two scopes that need to be defined within the IDP:
 
 * mrmat-python-api-flask-resource-write - Permit create/modify/remove of resources
 * mrmat-python-api-flask-resource-read  - Permit reading resources
+
+## Databases
+
+### Postgres
+
+```postgresql
+infradb=# create role mhpaf encrypted password 'very-secret' login;
+CREATE ROLE
+infradb=# create schema mhpaf;
+CREATE SCHEMA
+infradb=# alter schema mhpaf owner to mhpaf;
+ALTER SCHEMA
+infradb=# alter role mhpaf set search_path to mhpaf;
+ALTER ROLE
+```
+
+### MSSQLLocalDB
+
+Doesn't currently work.
