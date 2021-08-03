@@ -28,7 +28,7 @@ import os
 import pkg_resources
 from logging.config import dictConfig
 
-from flask import Flask
+from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_marshmallow import Marshmallow
@@ -105,9 +105,10 @@ def create_app(config_override=None, instance_path=None):
     app.config.setdefault('OPENAPI_REDOC_URL', 'https://rebilly.github.io/ReDoc/releases/latest/redoc.min.js')
     app.config.setdefault('OPENAPI_RAPIDOC_PATH', 'rapidoc')
     app.config.setdefault('OPENAPI_RAPIDOC_URL', 'https://unpkg.com/rapidoc/dist/rapidoc-min.js')
-    #app.config.setdefault('OPENAPI_SWAGGER_UI_CONFIG', {
-    #    'oauth2RedirectUrl': 'http://localhost:5000/apidoc/swagger/oauth2-redirect'
-    #})
+    app.config.setdefault('OPENAPI_SWAGGER_UI_CONFIG', {
+        'oauth2RedirectUrl': 'http://localhost:5000/apidoc/swagger/oauth2-redirect'
+    })
+    app.config.setdefault('OPENAPI_SWAGGER_UI_ENABLE_OAUTH', True)
     if 'FLASK_CONFIG' in os.environ and os.path.exists(os.path.expanduser(os.environ['FLASK_CONFIG'])):
         app.config.from_json(os.path.expanduser(os.environ['FLASK_CONFIG']))
     if config_override is not None:
@@ -156,31 +157,39 @@ def create_app(config_override=None, instance_path=None):
     #
     # If OAuth2 is in use, register our usage
 
-    api.spec.components.security_scheme('mrmat_keycloak',
-                                        {'type': 'oauth2',
-                                         'description': 'This API uses OAuth 2',
-                                         'flows': {
-                                             'clientCredentials': {
-                                                 'tokenUrl': 'https://keycloak.mrmat.org/auth/realms/master/protocol/openid-connect/token',
-                                                 'scopes': {
-                                                     'mrmat-python-api-flask-resource-read': 'Allows reading objects '
-                                                                                             'in the Resource API',
-                                                     'mrmat-python-api-flask-resource-write': 'Allows creating/modifying'
-                                                                                              ' and deleting objects '
-                                                                                              'in the Resource API'
-                                                 }
-                                             },
-                                             'authorizationCode': {
-                                                 'authorizationUrl': 'https://keycloak.mrmat.org/auth/realms/master/protocol/openid-connect/auth',
-                                                 'tokenUrl': 'https://keycloak.mrmat.org/auth/realms/master/protocol/openid-connect/token',
-                                                 'scopes': {
-                                                     'mrmat-python-api-flask-resource-read': 'Allows reading objects '
-                                                                                             'in the Resource API',
-                                                     'mrmat-python-api-flask-resource-write': 'Allows creating/modifying'
-                                                                                              ' and deleting objects '
-                                                                                              'in the Resource API'
-                                                 }
-                                             }
-                                         }})
+    api.spec.components.security_scheme('mrmat_keycloak', {
+        'type': 'oauth2',
+        'flows': {
+            'authorizationCode': {
+                'authorizationUrl': 'https://keycloak.mrmat.org/auth/realms/master/protocol/openid-connect/auth',
+                'tokenUrl': 'https://keycloak.mrmat.org/auth/realms/master/protocol/openid-connect/token',
+                'scopes': {
+                    'openid': 'Basic token without extra authorisation',
+                    'mrmat-python-api-flask-resource-read': 'Allows reading objects '
+                                                            'in the Resource API',
+                    'mrmat-python-api-flask-resource-write': 'Allows creating/modifying'
+                                                             ' and deleting objects '
+                                                             'in the Resource API'
+                }
+            }
+        }})
+    # api.spec.components.security_scheme('mrmat_keycloak', {
+    #     'type': 'openIdConnect',
+    #     'openIdConnectUrl': 'https://keycloak.mrmat.org/auth/realms/master/.well-known/openid-configuration'
+    # })
+    # api.spec.security('mrmat_keycloak', [
+    #     'profile',
+    #     'mrmat-python-api-flask-resource-write',
+    #     'mrmat-python-api-flask-resource-read'
+    # ])
+
+    @app.route('/apidoc/swagger/oauth2-redirect')
+    def oauth2_redirect():
+        return render_template('swagger-ui-redirect.html')
+        # state = request.args.get('state')
+        # code = request.args.get('code')
+        # session_state = request.args.get('session_state')
+        # return {'state': state, 'code': code, 'session_state': session_state}, 200
+
 
     return app

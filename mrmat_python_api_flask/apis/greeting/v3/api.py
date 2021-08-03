@@ -38,6 +38,7 @@ bp = Blueprint('greeting_v3',
 class GreetingV3(MethodView):
 
     @oidc.accept_token(require_token=True)
+    @bp.doc(security=[{'mrmat_keycloak': ['profile']}])
     @bp.response(200, GreetingV3Output)
     def get(self):
         """Get a greeting for your asserted name from a JWT token
