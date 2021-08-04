@@ -22,7 +22,7 @@
 
 """Main entry point when executing this application as a WSGI app
 """
-
+import json
 import sys
 import os
 import pkg_resources
@@ -33,6 +33,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_marshmallow import Marshmallow
 from flask_oidc import OpenIDConnect
+import flask_oidc.discovery
 from flask_smorest import Api
 
 __version__ = pkg_resources.get_distribution('mrmat-python-api-flask').version
@@ -88,10 +89,14 @@ def create_app(config_override=None, instance_path=None):
     #
     # Set configuration defaults. If a config file is present then load it. If we have overrides, apply them
 
+    app.config.setdefault('FLASK_RUN_SCHEME', 'http')
+    app.config.setdefault('FLASK_RUN_HOST', 'localhost')
+    app.config.setdefault('FLASK_RUN_PORT', 5000)
     app.config.setdefault('SECRET_KEY', os.urandom(16))
     app.config.setdefault('SQLALCHEMY_DATABASE_URI',
                           'sqlite+pysqlite:///' + os.path.join(app.instance_path, 'mrmat-python-api-flask.sqlite'))
     app.config.setdefault('SQLALCHEMY_TRACK_MODIFICATIONS', False)
+    app.config.setdefault('OIDC_CLIENT_SECRETS', os.path.join(app.instance_path, 'oidc_config.json'))
     app.config.setdefault('OIDC_USER_INFO_ENABLED', True)
     app.config.setdefault('OIDC_RESOURCE_SERVER_ONLY', True)
     app.config.setdefault('API_TITLE', 'MrMat :: Python :: API :: Flask')
@@ -106,12 +111,20 @@ def create_app(config_override=None, instance_path=None):
     app.config.setdefault('OPENAPI_RAPIDOC_PATH', 'rapidoc')
     app.config.setdefault('OPENAPI_RAPIDOC_URL', 'https://unpkg.com/rapidoc/dist/rapidoc-min.js')
     app.config.setdefault('OPENAPI_SWAGGER_UI_CONFIG', {
-        'oauth2RedirectUrl': 'http://localhost:5000/apidoc/swagger/oauth2-redirect'
+        'oauth2RedirectUrl': f"{app.config['FLASK_RUN_SCHEME']}://{app.config['FLASK_RUN_HOST']}:"
+                             f"{app.config['FLASK_RUN_PORT']}/apidoc/swagger/oauth2-redirect"
     })
     app.config.setdefault('OPENAPI_SWAGGER_UI_ENABLE_OAUTH', True)
+
+    #
+    # Allow overriding the defaults via a JSON file pointed to by the FLASK_CONFIG environment variable
+    # and via the config_override mapping provided by the CLI if we're called that way
+
     if 'FLASK_CONFIG' in os.environ and os.path.exists(os.path.expanduser(os.environ['FLASK_CONFIG'])):
+        app.logger.info(f"Configuring from {os.environ['FLASK_CONFIG']}")
         app.config.from_json(os.path.expanduser(os.environ['FLASK_CONFIG']))
     if config_override is not None:
+        app.logger.info('Configuring overrides')
         app.config.from_mapping(config_override)
 
     #
@@ -127,6 +140,7 @@ def create_app(config_override=None, instance_path=None):
         app.logger.error(f'Failed to create new instance path at {app.instance_path}')
         sys.exit(1)
 
+    # Initialize the app
     # When using Flask-SQLAlchemy, there is no need to explicitly import DAO classes because they themselves
     # inherit from the SQLAlchemy model
 
@@ -135,8 +149,70 @@ def create_app(config_override=None, instance_path=None):
     migrate.init_app(app, db)
     ma.init_app(app)
     api.init_app(app)
-    if 'OIDC_CLIENT_SECRETS' in app.config.keys():
+
+    #
+    # Initialise OIDC if we have configuration
+    # If the json file at OIDC_CLIENT_SECRETS does not exist but we have OIDC_DISCOVERY,
+    # OIDC_CLIENT_ID and OIDC_CLIENT_SECRET then we can construct it through discovery.
+    # Note that this actually *must* be called OIDC_CLIENT_SECRETS because it's hardcoded within
+    # the flask_oidc module.
+
+    def set_oidc_security_scheme(oidc_config: dict):
+        api.spec.components.security_scheme('mrmat_keycloak', {
+            'type': 'oauth2',
+            'flows': {
+                'authorizationCode': {
+                    'authorizationUrl': oidc_config['web']['auth_uri'],
+                    'tokenUrl': oidc_config['web']['token_uri'],
+                    'scopes': {
+                        'openid': 'Basic token without extra authorisation',
+                        'mrmat-python-api-flask-resource-read': 'Allows reading objects '
+                                                                'in the Resource API',
+                        'mrmat-python-api-flask-resource-write': 'Allows creating/modifying'
+                                                                 ' and deleting objects '
+                                                                 'in the Resource API'
+                    }
+                }
+            }})
+
+    #
+    # Offer a redirect for UI OIDC authentication
+
+    @app.route('/apidoc/swagger/oauth2-redirect')
+    def oauth2_redirect():
+        return render_template('swagger-ui-redirect.html')
+
+    #
+    # Construct the OIDC configuration if sufficient parameters are available
+
+    if os.path.exists(app.config.get('OIDC_CLIENT_SECRETS')):
+        app.logger.info(f"Initialising OIDC from {app.config.get('OIDC_CLIENT_SECRETS')}")
         oidc.init_app(app)
+        with open(app.config.get('OIDC_CLIENT_SECRETS'), 'r') as c:
+            oidc_config = json.load(c)
+        set_oidc_security_scheme(oidc_config)
+    elif {'OIDC_DISCOVERY', 'OIDC_CLIENT_ID', 'OIDC_CLIENT_SECRET'} <= set(app.config.keys()):
+        app.logger.info(f"Discovering OIDC from {app.config.get('OIDC_DISCOVERY')}")
+        discovery = flask_oidc.discovery.discover_OP_information(app.config.get('OIDC_DISCOVERY'))
+        oidc_config = {
+            'web': {
+                'client_id': app.config.get('OIDC_CLIENT_ID'),
+                'client_secret': app.config.get('OIDC_CLIENT_SECRET'),
+                'auth_uri': discovery['authorization_endpoint'],
+                'token_uri': discovery['token_endpoint'],
+                'token_introspection_uri': discovery['introspection_endpoint'],
+                'userinfo_uri': discovery['userinfo_endpoint'],
+                'issuer': discovery['issuer'],
+                'redirect_uris': [
+                    f"{app.config['FLASK_RUN_SCHEME']}://{app.config['FLASK_RUN_HOST']}:"
+                    f"{app.config['FLASK_RUN_PORT']}/oidc_callback"
+                ]
+            }
+        }
+        with open(app.config.get('OIDC_CLIENT_SECRETS'), 'x') as c:
+            json.dump(oidc_config, c)
+        oidc.init_app(app)
+        set_oidc_security_scheme(oidc_config)
     else:
         app.logger.warning('Running without any authentication/authorisation')
 
@@ -153,43 +229,5 @@ def create_app(config_override=None, instance_path=None):
     api.register_blueprint(api_greeting_v2, url_prefix='/api/greeting/v2')
     api.register_blueprint(api_greeting_v3, url_prefix='/api/greeting/v3')
     api.register_blueprint(api_resource_v1, url_prefix='/api/resource/v1')
-
-    #
-    # If OAuth2 is in use, register our usage
-
-    api.spec.components.security_scheme('mrmat_keycloak', {
-        'type': 'oauth2',
-        'flows': {
-            'authorizationCode': {
-                'authorizationUrl': 'https://keycloak.mrmat.org/auth/realms/master/protocol/openid-connect/auth',
-                'tokenUrl': 'https://keycloak.mrmat.org/auth/realms/master/protocol/openid-connect/token',
-                'scopes': {
-                    'openid': 'Basic token without extra authorisation',
-                    'mrmat-python-api-flask-resource-read': 'Allows reading objects '
-                                                            'in the Resource API',
-                    'mrmat-python-api-flask-resource-write': 'Allows creating/modifying'
-                                                             ' and deleting objects '
-                                                             'in the Resource API'
-                }
-            }
-        }})
-    # api.spec.components.security_scheme('mrmat_keycloak', {
-    #     'type': 'openIdConnect',
-    #     'openIdConnectUrl': 'https://keycloak.mrmat.org/auth/realms/master/.well-known/openid-configuration'
-    # })
-    # api.spec.security('mrmat_keycloak', [
-    #     'profile',
-    #     'mrmat-python-api-flask-resource-write',
-    #     'mrmat-python-api-flask-resource-read'
-    # ])
-
-    @app.route('/apidoc/swagger/oauth2-redirect')
-    def oauth2_redirect():
-        return render_template('swagger-ui-redirect.html')
-        # state = request.args.get('state')
-        # code = request.args.get('code')
-        # session_state = request.args.get('session_state')
-        # return {'state': state, 'code': code, 'session_state': session_state}, 200
-
 
     return app

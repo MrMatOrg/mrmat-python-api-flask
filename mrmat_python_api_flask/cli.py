@@ -38,6 +38,11 @@ def main() -> int:
     """
     parser = argparse.ArgumentParser(description=f'mrmat-python-api-flask - {__version__}')
     parser.add_argument('-d', '--debug', action='store_true', dest='debug', help='Debug')
+    parser.add_argument('--scheme',
+                        dest='scheme',
+                        required=False,
+                        default='http',
+                        help='Scheme to use for the endpoint')
     parser.add_argument('--host',
                         dest='host',
                         required=False,
@@ -58,16 +63,26 @@ def main() -> int:
                         required=False,
                         default=None,
                         help='Database URI')
-    parser.add_argument('--oidc-secrets',
-                        dest='oidc_secrets',
+    parser.add_argument('--oidc-discovery',
+                        dest='oidc_discovery',
                         required=False,
-                        help='Path to file containing OIDC registration')
+                        default=None,
+                        help='Discovery URI of the OIDC provider')
+    parser.add_argument('--oidc-config',
+                        dest='oidc_config',
+                        required=False,
+                        help='Path to file containing OIDC configuration')
 
     args = parser.parse_args()
 
-    overrides = {'DEBUG': args.debug}
-    if args.oidc_secrets is not None:
-        overrides['OIDC_CLIENT_SECRETS'] = args.oidc_secrets
+    overrides = {
+        'DEBUG': args.debug,
+        'FLASK_RUN_SCHEME': args.scheme,
+        'FLASK_RUN_HOST': args.host,
+        'FLASK_RUN_PORT': args.port
+    }
+    if args.oidc_config is not None:
+        overrides['OIDC_CLIENT_SECRETS'] = args.oidc_config
     if args.db is not None:
         overrides['SQLALCHEMY_DATABASE_URI'] = args.db
 

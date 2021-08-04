@@ -29,7 +29,7 @@ from mrmat_python_api_flask import ma
 
 class GreetingV2Input(ma.Schema):
     class Meta:
-        fields: ('name',)
+        fields: ('name',)   # noqa:F821
 
     name = fields.Str(
         required=False,

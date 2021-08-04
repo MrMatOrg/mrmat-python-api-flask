@@ -27,7 +27,6 @@ from typing import Tuple
 
 from werkzeug.local import LocalProxy
 from flask import request, g, current_app
-#from flask import g, request
 from flask_smorest import Blueprint
 from marshmallow import ValidationError
 
@@ -60,7 +59,7 @@ def get_all():
 @oidc.accept_token(require_token=True, scopes_required=['mrmat-python-api-flask-resource-read'])
 def get_one(i: int):
     identity = _extract_identity()
-    #logger.info(f'Called by {identity[1]} ({identity[0]}')
+    logger.info(f'Called by {identity[1]} ({identity[0]}')
     resource = Resource.query.filter(Resource.id == i).first_or_404()
     if resource is None:
         return {'status': 404, 'message': f'Unable to find entry with identifier {i} in database'}, 404
@@ -72,7 +71,7 @@ def get_one(i: int):
 @oidc.accept_token(require_token=True, scopes_required=['mrmat-python-api-flask-resource-write'])
 def create():
     (client_id, name) = _extract_identity()
-    #logger.info(f'Called by {name} ({client_id}')
+    logger.info(f'Called by {name} ({client_id}')
     try:
         json_body = request.get_json()
         if not json_body:
@@ -110,7 +109,7 @@ def create():
 @oidc.accept_token(require_token=True, scopes_required=['mrmat-python-api-flask-resource-write'])
 def modify(i: int):
     (client_id, name) = _extract_identity()
-    #logger.info(f'Called by {name} ({client_id}')
+    logger.info(f'Called by {name} ({client_id}')
     body = resource_schema.load(request.get_json())
 
     resource = Resource.query.filter(Resource.id == i).one_or_none()
@@ -128,9 +127,9 @@ def modify(i: int):
 @bp.delete('/<i>')
 @bp.doc(security=[{'mrmat_keycloak': ['mrmat-python-api-flask-resource-write']}])
 @oidc.accept_token(require_token=True, scopes_required=['mrmat-python-api-flask-resource-write'])
-def remove(self, i: int):
+def remove(i: int):
     (client_id, name) = _extract_identity()
-    #logger.info(f'Called by {name} ({client_id}')
+    logger.info(f'Called by {name} ({client_id}')
 
     resource = Resource.query.filter(Resource.id == i).one_or_none()
     if resource is None:
